@@ -54,17 +54,29 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
         </div>
       </div>
 
-      {/* Play */}
-      <button
-        className="btn-glass text-lg px-12 py-4 font-semibold"
-        onClick={onStart}
-        style={{
-          border: '1px solid rgba(99,102,241,0.5)',
-          background: 'rgba(99,102,241,0.1)',
-        }}
-      >
-        ▶ Start Game
-      </button>
+      {/* Game Mode */}
+      <div className="flex gap-4 w-full max-w-md">
+        <button
+          className="btn-glass text-lg flex-1 py-4 font-semibold"
+          onClick={() => onStart('classic')}
+          style={{
+            border: '1px solid rgba(99,102,241,0.5)',
+            background: 'rgba(99,102,241,0.1)',
+          }}
+        >
+          ▶ Classic
+        </button>
+        <button
+          className="btn-glass text-lg flex-1 py-4 font-semibold"
+          onClick={() => onStart('timed')}
+          style={{
+            border: '1px solid rgba(239,68,68,0.5)',
+            background: 'rgba(239,68,68,0.1)',
+          }}
+        >
+          ⏱️ Timed (60s)
+        </button>
+      </div>
     </div>
   )
 }

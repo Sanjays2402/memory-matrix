@@ -2,19 +2,20 @@ import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatTime, getStarRating } from '../gameLogic'
 
-function Confetti() {
+function Confetti({ big }) {
   const pieces = useMemo(() => {
     const colors = ['#6366f1', '#a855f7', '#ec4899', '#fbbf24', '#34d399', '#f43f5e', '#38bdf8']
-    return Array.from({ length: 60 }, (_, i) => ({
+    const count = big ? 150 : 60
+    return Array.from({ length: count }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
       color: colors[Math.floor(Math.random() * colors.length)],
-      delay: Math.random() * 2,
-      duration: 2 + Math.random() * 2,
-      size: 6 + Math.random() * 8,
+      delay: Math.random() * (big ? 1 : 2),
+      duration: (big ? 1.5 : 2) + Math.random() * 2,
+      size: (big ? 8 : 6) + Math.random() * (big ? 12 : 8),
       rotation: Math.random() * 360,
     }))
-  }, [])
+  }, [big])
 
   return (
     <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 100 }}>
@@ -38,7 +39,10 @@ function Confetti() {
   )
 }
 
-export default function VictoryOverlay({ moves, time, stars, combo, newBest, pairs, hintUsed, onPlayAgain, onMenu }) {
+export default function VictoryOverlay({ moves, time, stars, combo, newBest, pairs, hintUsed, isPerfect, gameOverReason, matchedCount, mode, onPlayAgain, onMenu }) {
+  const isTimeout = gameOverReason === 'timeout'
+  const showBigConfetti = isPerfect && !isTimeout
+
   return (
     <AnimatePresence>
       <motion.div
@@ -52,7 +56,8 @@ export default function VictoryOverlay({ moves, time, stars, combo, newBest, pai
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <Confetti />
+        {showBigConfetti && <Confetti big />}
+        {!isTimeout && !showBigConfetti && <Confetti />}
 
         <motion.div
           className="glass-light p-8 sm:p-10 max-w-sm w-full text-center"
@@ -61,14 +66,30 @@ export default function VictoryOverlay({ moves, time, stars, combo, newBest, pai
           transition={{ type: 'spring', damping: 20, stiffness: 300, delay: 0.2 }}
           style={{ position: 'relative', zIndex: 51 }}
         >
-          <div className="text-4xl mb-2">🏆</div>
+          <div className="text-4xl mb-2">{isTimeout ? '⏰' : showBigConfetti ? '🎉' : '🏆'}</div>
           <h2 className="text-2xl font-bold mb-1" style={{
-            background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+            background: isTimeout
+              ? 'linear-gradient(135deg, #ef4444, #f97316)'
+              : showBigConfetti
+              ? 'linear-gradient(135deg, #a855f7, #ec4899, #fbbf24)'
+              : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>
-            Victory!
+            {isTimeout ? "Time's Up!" : showBigConfetti ? 'PERFECT! 🎊' : 'Victory!'}
           </h2>
+
+          {showBigConfetti && (
+            <motion.div
+              className="text-sm font-semibold mb-2"
+              style={{ color: '#c084fc' }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.4, type: 'spring' }}
+            >
+              ✨ Zero mistakes — flawless memory! ✨
+            </motion.div>
+          )}
 
           {newBest && (
             <motion.div
@@ -82,20 +103,22 @@ export default function VictoryOverlay({ moves, time, stars, combo, newBest, pai
             </motion.div>
           )}
 
-          {/* Stars */}
-          <div className="flex justify-center gap-2 my-4">
-            {[1, 2, 3].map(i => (
-              <motion.span
-                key={i}
-                className={`text-3xl ${i <= stars ? 'text-yellow-400' : 'text-white/20'}`}
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.3 + i * 0.15, type: 'spring', stiffness: 400 }}
-              >
-                ★
-              </motion.span>
-            ))}
-          </div>
+          {/* Stars - only in classic wins */}
+          {!isTimeout && mode !== 'timed' && (
+            <div className="flex justify-center gap-2 my-4">
+              {[1, 2, 3].map(i => (
+                <motion.span
+                  key={i}
+                  className={`text-3xl ${i <= stars ? 'text-yellow-400' : 'text-white/20'}`}
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.3 + i * 0.15, type: 'spring', stiffness: 400 }}
+                >
+                  ★
+                </motion.span>
+              ))}
+            </div>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 my-6 text-sm">
@@ -104,16 +127,16 @@ export default function VictoryOverlay({ moves, time, stars, combo, newBest, pai
               <div className="text-xl font-bold">{moves}</div>
             </div>
             <div className="glass p-3 rounded-xl">
-              <div style={{ color: 'rgba(255,255,255,0.5)' }}>Time</div>
-              <div className="text-xl font-bold">{formatTime(time)}</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)' }}>{isTimeout ? 'Matched' : 'Time'}</div>
+              <div className="text-xl font-bold">{isTimeout ? `${matchedCount}/${pairs}` : formatTime(time)}</div>
             </div>
             <div className="glass p-3 rounded-xl">
               <div style={{ color: 'rgba(255,255,255,0.5)' }}>Best Combo</div>
               <div className="text-xl font-bold">{combo}x</div>
             </div>
             <div className="glass p-3 rounded-xl">
-              <div style={{ color: 'rgba(255,255,255,0.5)' }}>Pairs</div>
-              <div className="text-xl font-bold">{pairs}</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)' }}>{mode === 'timed' ? 'Mode' : 'Pairs'}</div>
+              <div className="text-xl font-bold">{mode === 'timed' ? '⏱️ Timed' : pairs}</div>
             </div>
           </div>
 

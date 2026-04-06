@@ -11,8 +11,8 @@ export default function App() {
   const [screen, setScreen] = useState('menu') // menu | playing
   const game = useGame()
 
-  const handleStart = () => {
-    game.startGame(game.difficulty, game.theme)
+  const handleStart = (selectedMode) => {
+    game.startGame(game.difficulty, game.theme, selectedMode || 'classic')
     setScreen('playing')
   }
 
@@ -21,7 +21,7 @@ export default function App() {
   }
 
   const handlePlayAgain = () => {
-    game.startGame(game.difficulty, game.theme)
+    game.startGame(game.difficulty, game.theme, game.mode)
   }
 
   return (
@@ -64,6 +64,8 @@ export default function App() {
             setSoundOn={game.setSoundOn}
             hintUsed={game.hintUsed}
             onHint={game.useHint}
+            mode={game.mode}
+            peeking={game.peeking}
           />
 
           <GameBoard
@@ -73,6 +75,8 @@ export default function App() {
             shakeIds={game.shakeIds}
             matchAnimIds={game.matchAnimIds}
             showHint={game.showHint}
+            peeking={game.peeking}
+            peekProgress={game.peekProgress}
             theme={game.theme}
             difficulty={game.difficulty}
             onCardClick={game.flipCard}
@@ -89,6 +93,10 @@ export default function App() {
           newBest={game.newBest}
           pairs={DIFFICULTIES[game.difficulty].pairs}
           hintUsed={game.hintUsed}
+          isPerfect={game.isPerfect}
+          gameOverReason={game.gameOverReason}
+          matchedCount={game.matchedPairIds.size}
+          mode={game.mode}
           onPlayAgain={handlePlayAgain}
           onMenu={handleMenu}
         />

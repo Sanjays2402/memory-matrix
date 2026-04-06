@@ -5,13 +5,16 @@ import { playFlip, playMatch, playNoMatch, playCombo, playVictory, playHint } fr
 export function useGame() {
   const [difficulty, setDifficulty] = useState('easy')
   const [theme, setTheme] = useState('emoji')
+  const [mode, setMode] = useState('classic') // 'classic' | 'timed'
   const [cards, setCards] = useState([])
   const [flippedIds, setFlippedIds] = useState([])
   const [matchedPairIds, setMatchedPairIds] = useState(new Set())
   const [moves, setMoves] = useState(0)
+  const [mistakes, setMistakes] = useState(0)
   const [time, setTime] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [gameOver, setGameOver] = useState(false)
+  const [gameOverReason, setGameOverReason] = useState('win') // 'win' | 'timeout'
   const [combo, setCombo] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
   const [locked, setLocked] = useState(false)
@@ -21,15 +24,22 @@ export function useGame() {
   const [newBest, setNewBest] = useState(false)
   const [shakeIds, setShakeIds] = useState(new Set())
   const [matchAnimIds, setMatchAnimIds] = useState(new Set())
+  const [peeking, setPeeking] = useState(false)
+  const [peekProgress, setPeekProgress] = useState(0) // 0 to 1 for staggered flip
 
   const timerRef = useRef(null)
+  const peekTimerRef = useRef(null)
   const totalPairs = useRef(0)
+  const modeRef = useRef('classic')
 
-  const startGame = useCallback((diff, th) => {
+  const startGame = useCallback((diff, th, md) => {
     const d = diff || difficulty
     const t = th || theme
+    const m = md || mode
     setDifficulty(d)
     setTheme(t)
+    setMode(m)
+    modeRef.current = m
 
     const newCards = generateCards(d, t)
     totalPairs.current = newCards.length / 2
@@ -38,41 +48,75 @@ export function useGame() {
     setFlippedIds([])
     setMatchedPairIds(new Set())
     setMoves(0)
-    setTime(0)
+    setMistakes(0)
+    setTime(m === 'timed' ? 60 : 0)
     setIsPlaying(true)
     setGameOver(false)
+    setGameOverReason('win')
     setCombo(0)
     setMaxCombo(0)
-    setLocked(false)
+    setLocked(true) // locked during peek
     setHintUsed(false)
     setShowHint(false)
     setNewBest(false)
     setShakeIds(new Set())
     setMatchAnimIds(new Set())
 
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => {
-      setTime(t => t + 1)
-    }, 1000)
-  }, [difficulty, theme])
+    // Card peek animation: show all face-up for 2s then stagger flip
+    setPeeking(true)
+    setPeekProgress(0)
+    if (peekTimerRef.current) clearTimeout(peekTimerRef.current)
 
-  const endGame = useCallback((currentMoves, currentTime) => {
+    peekTimerRef.current = setTimeout(() => {
+      setPeekProgress(1) // trigger staggered flip-back
+      setTimeout(() => {
+        setPeeking(false)
+        setPeekProgress(0)
+        setLocked(false)
+      }, 800) // wait for stagger animation to finish
+    }, 2000)
+
+    if (timerRef.current) clearInterval(timerRef.current)
+    // Start timer after peek finishes (2.8s)
+    setTimeout(() => {
+      if (m === 'timed') {
+        timerRef.current = setInterval(() => {
+          setTime(t => {
+            if (t <= 1) {
+              clearInterval(timerRef.current)
+              return 0
+            }
+            return t - 1
+          })
+        }, 1000)
+      } else {
+        timerRef.current = setInterval(() => {
+          setTime(t => t + 1)
+        }, 1000)
+      }
+    }, 2800)
+  }, [difficulty, theme, mode])
+
+  const endGame = useCallback((currentMoves, currentTime, reason = 'win') => {
     setGameOver(true)
+    setGameOverReason(reason)
     setIsPlaying(false)
     if (timerRef.current) clearInterval(timerRef.current)
 
-    const stars = getStarRating(currentMoves, totalPairs.current)
-    const isBest = saveBestScore(difficulty, theme, {
-      moves: currentMoves,
-      time: currentTime,
-      stars,
-    })
-    setNewBest(isBest)
+    if (reason === 'win') {
+      const stars = getStarRating(currentMoves, totalPairs.current)
+      const isBest = saveBestScore(difficulty, theme, {
+        moves: currentMoves,
+        time: currentTime,
+        stars,
+      })
+      setNewBest(isBest)
+    }
     if (soundOn) playVictory()
   }, [difficulty, theme, soundOn])
 
   const flipCard = useCallback((cardId) => {
-    if (locked || gameOver || showHint) return
+    if (locked || gameOver || showHint || peeking) return
 
     const card = cards.find(c => c.id === cardId)
     if (!card || card.matched || flippedIds.includes(cardId)) return
@@ -112,12 +156,13 @@ export function useGame() {
 
           // Check victory
           if (newMatched.size === totalPairs.current) {
-            endGame(newMoves, time)
+            endGame(newMoves, time, 'win')
           }
         }, 800)
       } else {
         // No match
         setCombo(0)
+        setMistakes(prev => prev + 1)
         if (soundOn) playNoMatch()
 
         setShakeIds(new Set([first.id, second.id]))
@@ -129,7 +174,7 @@ export function useGame() {
         }, 800)
       }
     }
-  }, [cards, flippedIds, locked, gameOver, showHint, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame])
+  }, [cards, flippedIds, locked, gameOver, showHint, peeking, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame])
 
   const useHintFn = useCallback(() => {
     if (hintUsed || !isPlaying || gameOver) return
@@ -144,10 +189,18 @@ export function useGame() {
     }, 1000)
   }, [hintUsed, isPlaying, gameOver, soundOn])
 
-  // Cleanup timer
+  // Timed mode: end game when timer hits 0
+  useEffect(() => {
+    if (modeRef.current === 'timed' && time === 0 && isPlaying && !peeking) {
+      endGame(moves, 0, 'timeout')
+    }
+  }, [time, isPlaying, peeking, moves, endGame])
+
+  // Cleanup timers
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
+      if (peekTimerRef.current) clearTimeout(peekTimerRef.current)
     }
   }, [])
 
@@ -157,13 +210,16 @@ export function useGame() {
 
   const stars = getStarRating(moves, totalPairs.current || 8)
 
+  const isPerfect = gameOver && gameOverReason === 'win' && mistakes === 0
+
   return {
-    difficulty, theme, cards, flippedIds, matchedPairIds,
-    moves, time, isPlaying, gameOver, combo, maxCombo,
+    difficulty, theme, mode, cards, flippedIds, matchedPairIds,
+    moves, mistakes, time, isPlaying, gameOver, gameOverReason,
+    combo, maxCombo,
     locked, hintUsed, showHint, soundOn, newBest, stars,
-    shakeIds, matchAnimIds,
+    shakeIds, matchAnimIds, peeking, peekProgress, isPerfect,
     startGame, flipCard, useHint: useHintFn,
-    setSoundOn, setDifficulty, setTheme,
+    setSoundOn, setDifficulty, setTheme, setMode,
     formatTime,
   }
 }

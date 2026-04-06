@@ -1,7 +1,7 @@
 import Card from './Card'
 import { DIFFICULTIES } from '../gameLogic'
 
-export default function GameBoard({ cards, flippedIds, matchedPairIds, shakeIds, matchAnimIds, showHint, theme, difficulty, onCardClick }) {
+export default function GameBoard({ cards, flippedIds, matchedPairIds, shakeIds, matchAnimIds, showHint, peeking, peekProgress, theme, difficulty, onCardClick }) {
   const gridSize = DIFFICULTIES[difficulty].grid
 
   return (
@@ -12,7 +12,7 @@ export default function GameBoard({ cards, flippedIds, matchedPairIds, shakeIds,
         maxWidth: gridSize <= 4 ? 440 : gridSize <= 6 ? 560 : 640,
       }}
     >
-      {cards.map(card => (
+      {cards.map((card, index) => (
         <Card
           key={card.id}
           card={card}
@@ -21,6 +21,9 @@ export default function GameBoard({ cards, flippedIds, matchedPairIds, shakeIds,
           isShaking={shakeIds.has(card.id)}
           isMatchAnim={matchAnimIds.has(card.id)}
           showHint={showHint}
+          peeking={peeking}
+          peekProgress={peekProgress}
+          cardIndex={index}
           theme={theme}
           onClick={onCardClick}
         />

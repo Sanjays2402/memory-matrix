@@ -1,9 +1,12 @@
 import { THEMES } from '../gameLogic'
 
-export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAnim, showHint, theme, onClick }) {
+export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAnim, showHint, peeking, peekProgress, cardIndex, theme, onClick }) {
   const themeData = THEMES[theme]
-  const isRevealed = isFlipped || showHint
+  const isRevealed = isFlipped || showHint || (peeking && peekProgress === 0)
   const isProgramming = theme === 'programming'
+
+  // Staggered flip-back delay per card
+  const staggerDelay = peekProgress === 1 ? `${cardIndex * 30}ms` : '0ms'
 
   const getCardColor = () => {
     if (isProgramming) {
@@ -25,13 +28,16 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
     isRevealed || isMatched ? 'flipped' : '',
   ].filter(Boolean).join(' ')
 
+  // Apply stagger transition delay when flipping back from peek
+  const innerStyle = peekProgress === 1 ? { transitionDelay: staggerDelay } : {}
+
   return (
     <div
       className={cardClasses}
       onClick={() => onClick(card.id)}
       style={{ aspectRatio: '1' }}
     >
-      <div className={innerClasses}>
+      <div className={innerClasses} style={innerStyle}>
         {/* Front (face down) */}
         <div
           className="card-face"
