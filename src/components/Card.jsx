@@ -4,6 +4,7 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
   const themeData = THEMES[theme]
   const isRevealed = isFlipped || showHint || (peeking && peekProgress === 0)
   const isProgramming = theme === 'programming'
+  const isTextTheme = theme === 'programming' || theme === 'numbers'
 
   // Staggered flip-back delay per card
   const staggerDelay = peekProgress === 1 ? `${cardIndex * 30}ms` : '0ms'
@@ -62,7 +63,7 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
             boxShadow: `inset 0 0 30px ${getCardColor()}15`,
           }}
         >
-          {isProgramming ? (
+          {isTextTheme ? (
             <span
               style={{
                 fontSize: '1.4em',
