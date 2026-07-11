@@ -6,10 +6,8 @@ export default function GameBoard({ cards, flippedIds, matchedPairIds, shakeIds,
 
   return (
     <div
-      role="grid"
-      aria-label="Memory card board"
-      aria-rowcount={gridSize}
-      aria-colcount={gridSize}
+      role="group"
+      aria-label={`Memory card board, ${gridSize} by ${gridSize}`}
       className="grid gap-2 sm:gap-3 mx-auto w-full"
       style={{
         gridTemplateColumns: `repeat(${gridSize}, 1fr)`,

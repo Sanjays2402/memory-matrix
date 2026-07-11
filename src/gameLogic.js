@@ -98,8 +98,12 @@ export function saveBestScore(difficulty, theme, score) {
   const scores = getBestScores()
   const key = `${difficulty}-${theme}`
   const existing = scores[key]
+  const existingIsValid = existing
+    && typeof existing === 'object'
+    && Number.isFinite(existing.moves)
+    && Number.isFinite(existing.time)
 
-  if (!existing || score.moves < existing.moves || (score.moves === existing.moves && score.time < existing.time)) {
+  if (!existingIsValid || score.moves < existing.moves || (score.moves === existing.moves && score.time < existing.time)) {
     try {
       scores[key] = score
       localStorage.setItem(STORAGE_KEY, JSON.stringify(scores))

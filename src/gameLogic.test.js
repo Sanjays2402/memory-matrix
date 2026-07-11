@@ -57,6 +57,13 @@ describe('best scores', () => {
     expect(saveBestScore('easy', 'emoji', { moves: 8, time: 20, stars: 3 })).toBe(false)
   })
 
+  test('replaces a malformed score entry with a valid score', () => {
+    localStorage.setItem('memory-matrix-scores', JSON.stringify({ 'easy-emoji': 'corrupt' }))
+
+    expect(saveBestScore('easy', 'emoji', { moves: 8, time: 20, stars: 3 })).toBe(true)
+    expect(getBestScores()['easy-emoji']).toMatchObject({ moves: 8, time: 20, stars: 3 })
+  })
+
   test('keeps a lower-move score even when a slower score arrives later', () => {
     expect(saveBestScore('easy', 'emoji', { moves: 8, time: 30, stars: 3 })).toBe(true)
     expect(saveBestScore('easy', 'emoji', { moves: 9, time: 20, stars: 3 })).toBe(false)

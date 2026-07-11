@@ -8,7 +8,7 @@ const cards = Array.from({ length: 16 }, (_, index) => ({
   symbol: String(Math.floor(index / 2) + 1),
 }))
 
-test('announces grid dimensions and card positions', () => {
+test('labels the native button collection and card positions', () => {
   render(
     <GameBoard
       cards={cards}
@@ -25,9 +25,8 @@ test('announces grid dimensions and card positions', () => {
     />,
   )
 
-  const grid = screen.getByRole('grid', { name: 'Memory card board' })
-  expect(grid).toHaveAttribute('aria-rowcount', '4')
-  expect(grid).toHaveAttribute('aria-colcount', '4')
+  const board = screen.getByRole('group', { name: 'Memory card board, 4 by 4' })
+  expect(board).not.toHaveAttribute('role', 'grid')
 
   const buttons = screen.getAllByRole('button', { name: /Hidden card/ })
   expect(buttons[0]).toHaveAttribute('aria-label', 'Hidden card, row 1, column 1')
