@@ -1,6 +1,6 @@
 import { THEMES } from '../gameLogic'
 
-export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAnim, showHint, peeking, peekProgress, cardIndex, theme, onClick }) {
+export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAnim, showHint, peeking, peekProgress, cardIndex, theme, positionLabel = '', onClick }) {
   const themeData = THEMES[theme]
   const isRevealed = isFlipped || showHint || (peeking && peekProgress === 0)
   const isProgramming = theme === 'programming'
@@ -31,11 +31,12 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
 
   // Apply stagger transition delay when flipping back from peek
   const innerStyle = peekProgress === 1 ? { transitionDelay: staggerDelay } : {}
-  const accessibleName = isMatched
+  const cardStateLabel = isMatched
     ? `Card: ${card.symbol}, matched`
     : isRevealed
       ? `Card: ${card.symbol}`
       : 'Hidden card'
+  const accessibleName = positionLabel ? `${cardStateLabel}, ${positionLabel}` : cardStateLabel
 
   return (
     <button
