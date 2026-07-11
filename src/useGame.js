@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { generateCards, getStarRating, saveBestScore, formatTime } from './gameLogic'
+import { DIFFICULTIES, generateCards, getStarRating, saveBestScore, formatTime } from './gameLogic'
 import { playFlip, playMatch, playNoMatch, playCombo, playVictory, playHint } from './sounds'
 
 export function useGame() {
@@ -189,11 +189,13 @@ export function useGame() {
     }, 1000)
   }, [hintUsed, isPlaying, gameOver, soundOn])
 
-  // Timed mode: end game when timer hits 0
+  // Timed mode: end game when timer hits 0. Defer the state transition so
+  // restarting/unmounting can cancel it before it commits a stale timeout.
   useEffect(() => {
-    if (modeRef.current === 'timed' && time === 0 && isPlaying && !peeking) {
-      endGame(moves, 0, 'timeout')
-    }
+    if (modeRef.current !== 'timed' || time !== 0 || !isPlaying || peeking) return undefined
+
+    const timeoutId = setTimeout(() => endGame(moves, 0, 'timeout'), 0)
+    return () => clearTimeout(timeoutId)
   }, [time, isPlaying, peeking, moves, endGame])
 
   // Cleanup timers
@@ -204,11 +206,7 @@ export function useGame() {
     }
   }, [])
 
-  // Track time for endGame
-  const timeRef = useRef(time)
-  useEffect(() => { timeRef.current = time }, [time])
-
-  const stars = getStarRating(moves, totalPairs.current || 8)
+  const stars = getStarRating(moves, DIFFICULTIES[difficulty].pairs)
 
   const isPerfect = gameOver && gameOverReason === 'win' && mistakes === 0
 
