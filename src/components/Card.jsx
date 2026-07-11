@@ -31,12 +31,21 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
 
   // Apply stagger transition delay when flipping back from peek
   const innerStyle = peekProgress === 1 ? { transitionDelay: staggerDelay } : {}
+  const accessibleName = isMatched
+    ? `Card: ${card.symbol}, matched`
+    : isRevealed
+      ? `Card: ${card.symbol}`
+      : 'Hidden card'
 
   return (
-    <div
+    <button
+      type="button"
       className={cardClasses}
       onClick={() => onClick(card.id)}
-      style={{ aspectRatio: '1' }}
+      disabled={isMatched}
+      aria-label={accessibleName}
+      aria-pressed={isRevealed || isMatched}
+      style={{ aspectRatio: '1', padding: 0, border: 0, background: 'transparent' }}
     >
       <div className={innerClasses} style={innerStyle}>
         {/* Front (face down) */}
@@ -82,6 +91,6 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
           )}
         </div>
       </div>
-    </div>
+    </button>
   )
 }
