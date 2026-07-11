@@ -60,10 +60,15 @@ export function shuffle(array, rng = Math.random) {
 }
 
 // Generate cards for a game
-export function generateCards(difficulty, theme) {
-  const { pairs } = DIFFICULTIES[difficulty]
+export function generateCards(difficulty, theme, rng = Math.random) {
+  const difficultyData = DIFFICULTIES[difficulty]
+  if (!difficultyData) throw new Error(`Unknown difficulty: ${difficulty}`)
+
   const themeData = THEMES[theme]
-  const selected = shuffle(themeData.cards).slice(0, pairs)
+  if (!themeData) throw new Error(`Unknown theme: ${theme}`)
+
+  const { pairs } = difficultyData
+  const selected = shuffle(themeData.cards, rng).slice(0, pairs)
   const cards = []
 
   selected.forEach((symbol, idx) => {
@@ -74,7 +79,7 @@ export function generateCards(difficulty, theme) {
     )
   })
 
-  return shuffle(cards)
+  return shuffle(cards, rng)
 }
 
 // Local storage helpers
