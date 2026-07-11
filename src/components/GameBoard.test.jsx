@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import GameBoard from './GameBoard'
 
 const cards = Array.from({ length: 16 }, (_, index) => ({
