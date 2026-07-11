@@ -113,7 +113,8 @@ export function saveBestScore(difficulty, theme, score) {
 
 // Format time
 export function formatTime(seconds) {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
+  const normalized = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0
+  const m = Math.floor(normalized / 60)
+  const s = normalized % 60
   return `${m}:${s.toString().padStart(2, '0')}`
 }
