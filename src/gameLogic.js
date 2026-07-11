@@ -87,7 +87,8 @@ const STORAGE_KEY = 'memory-matrix-scores'
 
 export function getBestScores() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
+    const value = JSON.parse(localStorage.getItem(STORAGE_KEY))
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {}
   } catch {
     return {}
   }
@@ -99,9 +100,13 @@ export function saveBestScore(difficulty, theme, score) {
   const existing = scores[key]
 
   if (!existing || score.moves < existing.moves || (score.moves === existing.moves && score.time < existing.time)) {
-    scores[key] = score
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores))
-    return true // New best
+    try {
+      scores[key] = score
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(scores))
+      return true // New best
+    } catch {
+      return false
+    }
   }
   return false
 }

@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest'
-import { generateCards, shuffle } from './gameLogic'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { generateCards, getBestScores, saveBestScore, shuffle } from './gameLogic'
 
 describe('shuffle', () => {
   test('does not mutate its input', () => {
@@ -34,5 +34,33 @@ describe('generateCards', () => {
 
   test('rejects an unknown theme', () => {
     expect(() => generateCards('easy', 'unknown')).toThrow('Unknown theme: unknown')
+  })
+})
+
+describe('best scores', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    localStorage.clear()
+  })
+
+  test('ignores stored JSON values that are not score maps', () => {
+    localStorage.setItem('memory-matrix-scores', '[]')
+
+    expect(getBestScores()).toEqual({})
+  })
+
+  test('returns false instead of throwing when storage writes are blocked', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'QuotaExceededError')
+    })
+
+    expect(saveBestScore('easy', 'emoji', { moves: 8, time: 20, stars: 3 })).toBe(false)
+  })
+
+  test('keeps a lower-move score even when a slower score arrives later', () => {
+    expect(saveBestScore('easy', 'emoji', { moves: 8, time: 30, stars: 3 })).toBe(true)
+    expect(saveBestScore('easy', 'emoji', { moves: 9, time: 20, stars: 3 })).toBe(false)
+
+    expect(getBestScores()['easy-emoji']).toMatchObject({ moves: 8, time: 30 })
   })
 })
