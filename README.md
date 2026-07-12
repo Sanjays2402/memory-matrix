@@ -12,6 +12,34 @@
 
 </div>
 
+## Screenshots
+
+<p align="center">
+  <a href="https://sanjays2402.github.io/memory-matrix/"><img src="docs/screenshots/01-game-setup.png" alt="Memory Matrix game setup with board size, card deck, and game mode controls" width="100%"></a>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/02-classic-gameplay.png" alt="Classic Memory Matrix gameplay with score and streak feedback"></td>
+    <td width="50%"><img src="docs/screenshots/03-time-attack.png" alt="Time Attack gameplay with bonus seconds and a larger board"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Classic mode</strong><br><sub>Chain matches and protect your streak.</sub></td>
+    <td align="center"><strong>Time Attack</strong><br><sub>Match quickly to earn bonus seconds.</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/04-mobile-gameplay.png" alt="Responsive Memory Matrix gameplay on mobile" width="390"></td>
+    <td width="50%" align="center"><img src="docs/screenshots/05-results.png" alt="Memory Matrix final score and personal best results screen" width="390"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Responsive play</strong><br><sub>The full game fits touch screens without horizontal overflow.</sub></td>
+    <td align="center"><strong>Personal-best results</strong><br><sub>Review score, speed, moves, and best streak.</sub></td>
+  </tr>
+</table>
+
 ---
 
 ## Why it is fun
