@@ -115,6 +115,20 @@ export function saveBestScore(difficulty, theme, score) {
   return false
 }
 
+// Reward a match with an escalating streak bonus. Using a focus peek halves
+// future rewards for the round, keeping it useful without making scores free.
+export function calculateMatchReward(combo, hintUsed = false) {
+  const streak = Number.isFinite(combo) ? Math.max(1, Math.floor(combo)) : 1
+  const base = 100
+  const streakBonus = 25 * streak * (streak - 1)
+  const reward = Math.min(1250, base * streak + streakBonus)
+  return hintUsed ? Math.round(reward / 2) : reward
+}
+
+export function getTimedBonus(difficulty) {
+  return { easy: 2, medium: 3, hard: 4 }[difficulty] || 0
+}
+
 // Format time
 export function formatTime(seconds) {
   const normalized = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0

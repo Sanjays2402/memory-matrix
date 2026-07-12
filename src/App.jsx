@@ -49,6 +49,8 @@ export default function App() {
             time={game.time}
             stars={game.stars}
             combo={game.combo}
+            score={game.score}
+            lastReward={game.lastReward}
             soundOn={game.soundOn}
             setSoundOn={game.setSoundOn}
             hintUsed={game.hintUsed}
@@ -84,6 +86,7 @@ export default function App() {
           time={game.time}
           stars={game.stars}
           combo={game.maxCombo}
+          score={game.score}
           newBest={game.newBest}
           pairs={DIFFICULTIES[game.difficulty].pairs}
           hintUsed={game.hintUsed}

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { DIFFICULTIES, generateCards, getStarRating, saveBestScore, formatTime } from './gameLogic'
+import { DIFFICULTIES, calculateMatchReward, generateCards, getStarRating, getTimedBonus, saveBestScore, formatTime } from './gameLogic'
 import { playFlip, playMatch, playNoMatch, playCombo, playVictory, playHint } from './sounds'
 
 export function useGame() {
@@ -17,6 +17,8 @@ export function useGame() {
   const [gameOverReason, setGameOverReason] = useState('win') // 'win' | 'timeout'
   const [combo, setCombo] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
+  const [score, setScore] = useState(0)
+  const [lastReward, setLastReward] = useState(null)
   const [locked, setLocked] = useState(false)
   const [hintUsed, setHintUsed] = useState(false)
   const [showHint, setShowHint] = useState(false)
@@ -55,6 +57,8 @@ export function useGame() {
     setGameOverReason('win')
     setCombo(0)
     setMaxCombo(0)
+    setScore(0)
+    setLastReward(null)
     setLocked(true) // locked during peek
     setHintUsed(false)
     setShowHint(false)
@@ -136,7 +140,12 @@ export function useGame() {
       if (first.pairId === second.pairId) {
         // Match!
         const newCombo = combo + 1
+        const points = calculateMatchReward(newCombo, hintUsed)
+        const timeBonus = modeRef.current === 'timed' ? getTimedBonus(difficulty) : 0
         setCombo(newCombo)
+        setScore(current => current + points)
+        setLastReward({ id: Date.now(), points, timeBonus, combo: newCombo })
+        if (timeBonus) setTime(current => current + timeBonus)
         if (newCombo > maxCombo) setMaxCombo(newCombo)
         if (soundOn) {
           if (newCombo >= 2) playCombo()
@@ -162,6 +171,7 @@ export function useGame() {
       } else {
         // No match
         setCombo(0)
+        setLastReward(null)
         setMistakes(prev => prev + 1)
         if (soundOn) playNoMatch()
 
@@ -174,7 +184,7 @@ export function useGame() {
         }, 800)
       }
     }
-  }, [cards, flippedIds, locked, gameOver, showHint, peeking, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame])
+  }, [cards, flippedIds, locked, gameOver, showHint, peeking, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame, hintUsed, difficulty])
 
   const useHintFn = useCallback(() => {
     if (hintUsed || !isPlaying || gameOver) return
@@ -213,7 +223,7 @@ export function useGame() {
   return {
     difficulty, theme, mode, cards, flippedIds, matchedPairIds,
     moves, mistakes, time, isPlaying, gameOver, gameOverReason,
-    combo, maxCombo,
+    combo, maxCombo, score, lastReward,
     locked, hintUsed, showHint, soundOn, newBest, stars,
     shakeIds, matchAnimIds, peeking, peekProgress, isPerfect,
     startGame, flipCard, useHint: useHintFn,

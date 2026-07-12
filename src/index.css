@@ -123,7 +123,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .back-action:hover, .new-round-action:hover, .text-action:hover { color: var(--ink); }
 .new-round-action { padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; }
 .new-round-action:hover { border-color: var(--line-strong); background: rgba(255,255,255,.025); }
-.game-hud { width: min(920px, calc(100% - 48px)); min-height: 98px; margin: 25px auto 22px; display: grid; grid-template-columns: 160px minmax(150px, 1fr) auto auto; gap: 25px; align-items: center; padding: 15px 18px; border: 1px solid var(--line); border-radius: 14px; background: rgba(15,18,19,.76); }
+.game-hud { position: relative; width: min(1020px, calc(100% - 48px)); min-height: 98px; margin: 25px auto 22px; display: grid; grid-template-columns: 150px minmax(140px, 1fr) auto auto; gap: 22px; align-items: center; padding: 15px 18px; border: 1px solid var(--line); border-radius: 14px; background: rgba(15,18,19,.76); }
 .round-kicker, .hud-stat small, .progress-copy span { display: block; color: var(--dim); font-size: 8px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; }
 .round-context strong { display: block; margin-top: 6px; font-size: 12px; font-weight: 600; }
 .progress-block { min-width: 130px; }
@@ -131,8 +131,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .progress-copy strong { color: #b8c0ba; font-size: 10px; }
 .progress-track { height: 3px; overflow: hidden; border-radius: 999px; background: #282e2a; }
 .progress-track span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .45s ease; }
-.stat-row { display: flex; align-items: center; gap: 20px; }
-.hud-stat { min-width: 63px; display: flex; align-items: center; gap: 8px; }
+.stat-row { display: flex; align-items: center; gap: 18px; }
+.hud-stat { min-width: 58px; display: flex; align-items: center; gap: 8px; }
+.score-stat { min-width: 72px; }
+.score-stat strong { color: var(--accent); }
 .hud-stat > svg { color: var(--dim); }
 .hud-stat strong { display: block; margin-top: 3px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .hud-stat.danger svg, .hud-stat.danger strong { color: var(--danger); }
@@ -141,6 +143,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .star-stat b.filled { color: var(--accent); }
 .combo-stat { color: var(--accent); animation: combo-pop .3s ease-out; }
 .combo-stat small { color: #899268; }
+.reward-pop { position: absolute; z-index: 4; left: 50%; bottom: -13px; display: flex; align-items: center; gap: 7px; padding: 5px 10px; transform: translateX(-50%); border: 1px solid rgba(216,255,79,.28); border-radius: 999px; color: var(--accent); background: #141812; box-shadow: 0 8px 24px rgba(0,0,0,.3); animation: reward-rise 1.8s ease-out both; font-size: 9px; }
+.reward-pop strong { font-family: 'DM Sans', sans-serif; font-size: 13px; }
+.reward-pop span { color: #a8b08b; text-transform: uppercase; letter-spacing: .07em; }
+.reward-pop b { padding-left: 7px; border-left: 1px solid rgba(216,255,79,.22); color: #7dd3fc; }
 .hud-actions { display: flex; align-items: center; gap: 6px; }
 .text-action { padding: 0 11px; border: 1px solid var(--line); border-radius: 9px; }
 .text-action:disabled { opacity: .35; cursor: not-allowed; }
@@ -188,7 +194,12 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .result-stars { display: flex; justify-content: center; gap: 5px; margin: 19px 0 0; }
 .result-stars span { color: #303632; font-size: 20px; }
 .result-stars span.filled { color: var(--accent); }
-.result-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 26px 0 20px; border-block: 1px solid var(--line); }
+.result-score { margin: 19px 0 0; }
+.result-score small, .result-score strong, .result-score span { display: block; }
+.result-score small { color: var(--dim); font-size: 8px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.result-score strong { margin-top: 4px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 36px; font-weight: 500; letter-spacing: -.04em; }
+.result-score span { margin-top: -2px; color: var(--dim); font-size: 9px; }
+.result-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 18px 0 20px; border-block: 1px solid var(--line); }
 .result-stats div { padding: 17px 8px; }
 .result-stats div + div { border-left: 1px solid var(--line); }
 .result-stats small, .result-stats strong { display: block; }
@@ -204,6 +215,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 @keyframes match-pop { 0%,100% { transform: rotateY(180deg) scale(1); } 45% { transform: rotateY(180deg) scale(1.08); filter: brightness(1.35); } }
 @keyframes card-shake { 0%,100% { transform: rotateY(180deg) translateX(0); } 25% { transform: rotateY(180deg) translateX(-6px); } 75% { transform: rotateY(180deg) translateX(6px); } }
 @keyframes combo-pop { 0% { transform: scale(.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes reward-rise { 0% { opacity: 0; transform: translate(-50%, 8px) scale(.86); } 18%, 72% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -10px) scale(.96); } }
 @keyframes confetti-fall { to { transform: translateY(105vh) rotate(560deg); opacity: .1; } }
 
 @media (max-width: 900px) {
@@ -247,8 +259,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .hud-actions { grid-column: 2; }
   .text-action { width: 44px; padding: 0; }
   .text-action span { display: none; }
-  .stat-row { grid-column: 1 / -1; gap: clamp(14px, 6vw, 28px); }
-  .hud-stat { min-width: 52px; }
+  .stat-row { grid-column: 1 / -1; gap: clamp(10px, 4.5vw, 22px); }
+  .hud-stat { min-width: 45px; }
+  .score-stat { min-width: 62px; }
+  .reward-pop { bottom: -14px; }
   .board-wrap { width: calc(100% - 16px); padding: 15px; }
   .game-board { gap: 7px; }
   .game-board[data-grid="6"] { gap: 5px; }

@@ -1,109 +1,123 @@
+<div align="center">
+
 # Memory Matrix
 
-A focused, modern memory-matching game designed for mouse, touch, and keyboard.
+### A fast, polished memory game that rewards focus, speed, and streaks.
 
-**[Play Memory Matrix →](https://sanjays2402.github.io/memory-matrix/)**
+[![Play now](https://img.shields.io/badge/PLAY_NOW-d8ff4f?style=for-the-badge&labelColor=111409&logo=githubpages&logoColor=111409)](https://sanjays2402.github.io/memory-matrix/)
+[![Source](https://img.shields.io/badge/SOURCE_CODE-181c1d?style=for-the-badge&logo=github)](https://github.com/Sanjays2402/memory-matrix)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/Sanjays2402/memory-matrix/deploy.yml?branch=master&style=for-the-badge&label=DEPLOY)](https://github.com/Sanjays2402/memory-matrix/actions/workflows/deploy.yml)
 
-![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)
-![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwindcss)
-![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-ff69b4?style=flat-square)
+[Live game](https://sanjays2402.github.io/memory-matrix/) · [How to play](#how-to-play) · [Run locally](#run-locally) · [Report a bug](https://github.com/Sanjays2402/memory-matrix/issues/new)
+
+</div>
 
 ---
 
-## ✨ Features
+## Why it is fun
 
-🃏 **Classic Memory Gameplay** — Flip two cards, find matching pairs, clear the board
+Memory Matrix starts with familiar pair matching, then adds a light arcade layer:
 
-🎚️ **Three Difficulty Levels**
-- 🟢 Easy (4×4 grid, 8 pairs)
-- 🟡 Medium (6×6 grid, 18 pairs)
-- 🔴 Hard (8×8 grid, 32 pairs)
+- **Score every match** — clean matches earn points immediately.
+- **Build streaks** — consecutive matches multiply the reward up to **1,250 points per pair**.
+- **Race the clock** — Time Attack begins at 60 seconds and successful matches add **2–4 bonus seconds**, depending on board size.
+- **Chase mastery** — improve your move count, finish time, star rating, and longest streak.
+- **Choose your vibe** — play Emoji, Programming, Space, Animals, or Numbers decks.
+- **Use one Focus Peek** — reveal the board once when you are stuck; the trade-off is half points for the rest of that round.
 
-🎨 **Four Card Themes**
-- 😀 Emoji — colorful emoji icons
-- 💻 Programming — language abbreviations with signature colors
-- 🪐 Space — planets, stars, and cosmic objects
-- 🦊 Animals — wildlife from foxes to flamingos
+## Game modes
 
-🔥 **Combo System** — Match pairs consecutively to build combos with visual + audio feedback
+| Mode | Goal | Twist |
+|---|---|---|
+| **Classic** | Clear the board efficiently | Earn up to three stars based on move count |
+| **Time Attack** | Match as many pairs as possible before time expires | Every match adds bonus time |
 
-⭐ **Star Rating** — 3-star rating based on move efficiency (fewer moves = more stars)
+## Boards and decks
 
-🏆 **Best Scores** — Per-difficulty, per-theme leaderboard saved in localStorage
+| Difficulty | Grid | Pairs | Time bonus per match |
+|---|---:|---:|---:|
+| Easy | 4×4 | 8 | +2 seconds |
+| Medium | 6×6 | 18 | +3 seconds |
+| Hard | 8×8 | 32 | +4 seconds |
 
-💡 **Hint System** — Peek at all cards for 1 second (one-time use per game)
+Five decks are included: **Emoji**, **Programming**, **Space**, **Animals**, and **Numbers**.
 
-🎵 **Sound Effects** — Web Audio API synth sounds for flips, matches, combos, and victory
+## How to play
 
-🎬 **Smooth Animations**
-- 3D CSS card flip with perspective transform
-- Pulse glow on match + fade to semi-transparent
-- Shake animation on mismatch
-- Spring-animated victory overlay with confetti
+1. Pick a board size, deck, and game mode.
+2. Memorize the opening preview before the cards turn over.
+3. Select two cards. A match stays revealed; a miss resets your streak.
+4. Chain consecutive matches to increase your score multiplier.
+5. Clear the board—or keep the Time Attack clock alive—to set a new personal best.
 
-## 🎨 Design
+> **Tip:** The Focus Peek is powerful, but using it halves future point rewards for that round.
 
-A gameplay-first dark interface:
+## Experience highlights
 
-- Near-black surfaces with a restrained acid-lime interaction accent
-- Clear setup flow with live deck preview and personal-best context
-- Compact in-game HUD with progress, moves, time, rating, hint, and sound controls
-- Tactile 3D card flips, match feedback, and focused victory states
-- Responsive 4×4, 6×6, and 8×8 boards with 44px mobile controls
-- Reduced-motion support, semantic controls, and visible keyboard focus
+- Responsive 4×4, 6×6, and 8×8 boards
+- Mouse, touch, and native keyboard controls
+- Accessible labels, visible focus states, and reduced-motion support
+- 3D card flips, match pulses, streak feedback, score popups, and confetti
+- Synthesized Web Audio feedback with a one-tap mute control
+- Local best scores with failure-safe `localStorage` access
+- Near-black gameplay-first UI with a restrained acid-lime accent
 
-## 🛠 Tech Stack
+## Built with
 
-| Tech | Version | Purpose |
-|------|---------|---------|
-| React | 19 | UI framework |
-| Vite | 8 | Build tool |
-| Tailwind CSS | v4 | Utility-first styling |
-| Framer Motion | 12 | Victory animations |
-| Web Audio API | — | Sound effects |
+[![React](https://img.shields.io/badge/React_19-20232a?style=flat-square&logo=react&logoColor=61dafb)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite_8-646cff?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-0f172a?style=flat-square&logo=tailwindcss&logoColor=38bdf8)](https://tailwindcss.com/)
+[![Framer Motion](https://img.shields.io/badge/Motion_12-111111?style=flat-square&logo=framer&logoColor=white)](https://motion.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest_4-252529?style=flat-square&logo=vitest&logoColor=6e9f18)](https://vitest.dev/)
 
-## 🚀 Getting Started
+## Run locally
 
 ```bash
-# Clone
-git clone https://github.com/Sanjays2402/memory-matrix.git
+git clone git@github.com:Sanjays2402/memory-matrix.git
 cd memory-matrix
-
-# Install
 npm install
-
-# Dev server
 npm run dev
+```
 
-# Build
+### Quality checks
+
+```bash
+npm run lint
+npm test
 npm run build
 ```
 
-## 📁 Project Structure
+## Project structure
 
-```
+```text
 src/
-├── App.jsx              # Main app with screen routing
-├── main.jsx             # Entry point
-├── index.css            # Global styles + animations
-├── gameLogic.js         # Cards, scoring, shuffle, storage
-├── useGame.js           # Game state hook
-├── sounds.js            # Web Audio synth effects
+├── App.jsx                    # Screen flow and composition
+├── gameLogic.js               # Decks, scoring, rewards, shuffle, storage
+├── useGame.js                 # Round state, timers, streaks, and interactions
+├── sounds.js                  # Web Audio feedback
+├── index.css                  # Design system, layout, motion, responsive rules
 └── components/
-    ├── BackgroundOrbs.jsx   # Ambient grid and glow canvas
-    ├── Icons.jsx            # Shared inline SVG icon set
-    ├── Card.jsx             # Single card with 3D flip
-    ├── GameBoard.jsx        # Grid layout
-    ├── Header.jsx           # Stats, combo, hint, sound toggle
-    ├── Menu.jsx             # Difficulty + theme selection
-    └── VictoryOverlay.jsx   # Results + confetti
+    ├── BackgroundOrbs.jsx     # Ambient canvas
+    ├── Card.jsx               # Accessible 3D card
+    ├── GameBoard.jsx          # Responsive board
+    ├── Header.jsx             # HUD, rewards, hint, and sound controls
+    ├── Icons.jsx              # Shared SVG icon set
+    ├── Menu.jsx               # Game setup and deck preview
+    └── VictoryOverlay.jsx     # Results, score, and replay flow
 ```
 
-## 📄 License
+## Links
 
-MIT
+- **Play:** https://sanjays2402.github.io/memory-matrix/
+- **Repository:** https://github.com/Sanjays2402/memory-matrix
+- **Issues:** https://github.com/Sanjays2402/memory-matrix/issues
+- **Deployments:** https://github.com/Sanjays2402/memory-matrix/actions/workflows/deploy.yml
+- **License:** [MIT](LICENSE)
 
----
+## Contributing
 
-Built with 🥔 energy
+Ideas and fixes are welcome. Open an [issue](https://github.com/Sanjays2402/memory-matrix/issues/new) or submit a pull request with a focused change and passing quality checks.
+
+## License
+
+Released under the [MIT License](LICENSE).

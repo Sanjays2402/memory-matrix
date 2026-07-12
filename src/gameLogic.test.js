@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { formatTime, generateCards, getBestScores, saveBestScore, shuffle } from './gameLogic'
+import { calculateMatchReward, formatTime, generateCards, getBestScores, getTimedBonus, saveBestScore, shuffle } from './gameLogic'
 
 describe('shuffle', () => {
   test('does not mutate its input', () => {
@@ -69,6 +69,27 @@ describe('best scores', () => {
     expect(saveBestScore('easy', 'emoji', { moves: 9, time: 20, stars: 3 })).toBe(false)
 
     expect(getBestScores()['easy-emoji']).toMatchObject({ moves: 8, time: 30 })
+  })
+})
+
+describe('game rewards', () => {
+  test.each([
+    [1, false, 100],
+    [2, false, 250],
+    [3, false, 450],
+    [7, false, 1250],
+    [3, true, 225],
+  ])('scores combo %s with hint=%s as %s points', (combo, hintUsed, expected) => {
+    expect(calculateMatchReward(combo, hintUsed)).toBe(expected)
+  })
+
+  test.each([
+    ['easy', 2],
+    ['medium', 3],
+    ['hard', 4],
+    ['unknown', 0],
+  ])('awards %s timed matches %s bonus seconds', (difficulty, expected) => {
+    expect(getTimedBonus(difficulty)).toBe(expected)
   })
 })
 

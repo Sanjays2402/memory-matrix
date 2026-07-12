@@ -1,7 +1,7 @@
 import { formatTime, DIFFICULTIES, THEMES } from '../gameLogic'
 import { Icon } from './Icons'
 
-export default function Header({ moves, time, stars, combo, soundOn, setSoundOn, hintUsed, onHint, mode, peeking, difficulty, theme, matchedCount }) {
+export default function Header({ moves, time, stars, combo, score, lastReward, soundOn, setSoundOn, hintUsed, onHint, mode, peeking, difficulty, theme, matchedCount }) {
   const isTimedLow = mode === 'timed' && time <= 10
   const pairs = DIFFICULTIES[difficulty].pairs
   const progress = pairs ? Math.round((matchedCount / pairs) * 100) : 0
@@ -19,11 +19,20 @@ export default function Header({ moves, time, stars, combo, soundOn, setSoundOn,
       </div>
 
       <div className="stat-row">
+        <div className="hud-stat score-stat"><span><small>Score</small><strong>{score.toLocaleString()}</strong></span></div>
         <div className="hud-stat"><Icon name="moves" /><span><small>Moves</small><strong>{moves}</strong></span></div>
         <div className={`hud-stat ${isTimedLow ? 'danger' : ''}`}><Icon name="timer" /><span><small>{mode === 'timed' ? 'Remaining' : 'Time'}</small><strong>{formatTime(time)}</strong></span></div>
         {mode !== 'timed' && <div className="hud-stat star-stat" aria-label={`${stars} of 3 stars`}><span><small>Rating</small><strong>{[1,2,3].map(i => <b key={i} className={i <= stars ? 'filled' : ''}>★</b>)}</strong></span></div>}
         {combo >= 2 && <div className="hud-stat combo-stat"><Icon name="flame" /><span><small>Streak</small><strong>{combo}×</strong></span></div>}
       </div>
+
+      {lastReward && (
+        <div key={lastReward.id} className="reward-pop" role="status">
+          <strong>+{lastReward.points}</strong>
+          <span>{lastReward.combo >= 2 ? `${lastReward.combo}× streak` : 'Match!'}</span>
+          {lastReward.timeBonus > 0 && <b>+{lastReward.timeBonus}s</b>}
+        </div>
+      )}
 
       <div className="hud-actions">
         <button type="button" className="text-action" onClick={onHint} disabled={hintUsed || peeking} title={hintUsed ? 'Focus peek already used' : 'Reveal all cards for one second'}>

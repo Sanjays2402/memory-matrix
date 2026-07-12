@@ -9,7 +9,7 @@ function Confetti({ big }) {
   return <div className="confetti-field" aria-hidden="true">{Array.from({ length: count }, (_, index) => <i key={index} style={{ left: `${seededValue(index, 1) * 100}%`, background: COLORS[Math.floor(seededValue(index, 2) * COLORS.length)], animationDelay: `${seededValue(index, 3) * 1.5}s`, animationDuration: `${1.8 + seededValue(index, 4) * 1.8}s` }} />)}</div>
 }
 
-export default function VictoryOverlay({ moves, time, stars, combo, newBest, pairs, hintUsed, isPerfect, gameOverReason, matchedCount, mode, onPlayAgain, onMenu }) {
+export default function VictoryOverlay({ moves, time, stars, combo, score, newBest, pairs, hintUsed, isPerfect, gameOverReason, matchedCount, mode, onPlayAgain, onMenu }) {
   const isTimeout = gameOverReason === 'timeout'
   return (
     <AnimatePresence>
@@ -22,6 +22,8 @@ export default function VictoryOverlay({ moves, time, stars, combo, newBest, pai
           <p>{isTimeout ? `You found ${matchedCount} of ${pairs} pairs. Ready for another run?` : isPerfect ? 'Zero mistakes. Every card, exactly where you remembered it.' : 'A sharper memory, one pair at a time.'}</p>
 
           {!isTimeout && mode !== 'timed' && <div className="result-stars" aria-label={`${stars} out of 3 stars`}>{[1,2,3].map(i => <span key={i} className={i <= stars ? 'filled' : ''}>★</span>)}</div>}
+
+          <div className="result-score"><small>Final score</small><strong>{score.toLocaleString()}</strong><span>points</span></div>
 
           <div className="result-stats">
             <div><small>Moves</small><strong>{moves}</strong></div>
