@@ -1,6 +1,8 @@
-# 🎴 Memory Matrix
+# Memory Matrix
 
-> Premium card matching game with glassmorphism design, combos & multiple themes
+A focused, modern memory-matching game designed for mouse, touch, and keyboard.
+
+**[Play Memory Matrix →](https://sanjays2402.github.io/memory-matrix/)**
 
 ![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite)
@@ -42,13 +44,14 @@
 
 ## 🎨 Design
 
-Premium **glassmorphism** aesthetic:
+A gameplay-first dark interface:
 
-- Deep dark background (`#0a0a0f`) with animated gradient mesh orbs
-- Glass-effect cards with backdrop blur and subtle borders
-- Pill-shaped stats and buttons with accent glow
-- Inter typography throughout
-- Responsive grid layout adapts to all screen sizes
+- Near-black surfaces with a restrained acid-lime interaction accent
+- Clear setup flow with live deck preview and personal-best context
+- Compact in-game HUD with progress, moves, time, rating, hint, and sound controls
+- Tactile 3D card flips, match feedback, and focused victory states
+- Responsive 4×4, 6×6, and 8×8 boards with 44px mobile controls
+- Reduced-motion support, semantic controls, and visible keyboard focus
 
 ## 🛠 Tech Stack
 
@@ -88,7 +91,8 @@ src/
 ├── useGame.js           # Game state hook
 ├── sounds.js            # Web Audio synth effects
 └── components/
-    ├── BackgroundOrbs.jsx   # Animated gradient blobs
+    ├── BackgroundOrbs.jsx   # Ambient grid and glow canvas
+    ├── Icons.jsx            # Shared inline SVG icon set
     ├── Card.jsx             # Single card with 3D flip
     ├── GameBoard.jsx        # Grid layout
     ├── Header.jsx           # Stats, combo, hint, sound toggle

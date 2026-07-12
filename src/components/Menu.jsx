@@ -1,82 +1,121 @@
-import { THEMES, DIFFICULTIES } from '../gameLogic'
+import { useMemo, useState } from 'react'
+import { THEMES, DIFFICULTIES, formatTime, getBestScores } from '../gameLogic'
+import { Icon } from './Icons'
+
+const MODES = {
+  classic: { label: 'Classic', description: 'Relaxed play', meta: 'No time limit' },
+  timed: { label: 'Time attack', description: 'Beat the clock', meta: '60 seconds' },
+}
 
 export default function Menu({ difficulty, theme, onDifficultyChange, onThemeChange, onStart }) {
+  const [mode, setMode] = useState('classic')
+  const score = useMemo(() => getBestScores()[`${difficulty}-${theme}`], [difficulty, theme])
+  const config = DIFFICULTIES[difficulty]
+  const themeData = THEMES[theme]
+  const previewSymbols = themeData.cards.slice(0, 6)
+
   return (
-    <div className="flex flex-col items-center gap-8 py-12 px-4" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="text-center mb-4">
-        <h1 className="text-5xl font-bold mb-3" style={{
-          background: 'linear-gradient(135deg, #6366f1, #a855f7, #ec4899)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}>
-          Memory Matrix
-        </h1>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          Match pairs • Build combos • Beat your best
-        </p>
+    <main className="menu-shell">
+      <nav className="menu-nav" aria-label="Main navigation">
+        <a className="brand" href="./" aria-label="Memory Matrix home">
+          <span className="brand-mark"><i /><i /><i /><i /></span>
+          <span>Memory Matrix</span>
+        </a>
+        <a className="nav-link" href="https://github.com/Sanjays2402/memory-matrix" target="_blank" rel="noreferrer">
+          View source <span aria-hidden="true">↗</span>
+        </a>
+      </nav>
+
+      <div className="menu-layout">
+        <section className="menu-intro" aria-labelledby="game-title">
+          <div className="eyebrow"><span /> A daily workout for your memory</div>
+          <h1 id="game-title">Find the pairs.<br /><em>Train your focus.</em></h1>
+          <p>Flip, remember, and match every card. Choose your challenge, build a streak, and set a new personal best.</p>
+
+          <div className="preview-stage" aria-hidden="true">
+            <div className="preview-meta">
+              <span>{themeData.name} deck</span>
+              <span>{config.grid} × {config.grid}</span>
+            </div>
+            <div className="preview-cards">
+              {previewSymbols.map((symbol, index) => (
+                <div key={`${theme}-${symbol}`} className={`preview-card preview-card-${index + 1}`}>
+                  {theme === 'programming' || theme === 'numbers' ? <strong>{symbol}</strong> : symbol}
+                </div>
+              ))}
+              <div className="preview-card preview-card-hidden"><span className="card-glyph">M</span></div>
+            </div>
+            <div className="preview-caption">
+              <span><b>{config.pairs}</b> pairs</span>
+              <span><b>{mode === 'timed' ? '60' : '∞'}</b> seconds</span>
+              <span><b>{score?.moves ?? '—'}</b> best moves</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="setup-panel" aria-labelledby="setup-title">
+          <div className="setup-heading">
+            <div>
+              <span className="step-label">Game setup</span>
+              <h2 id="setup-title">Make it yours</h2>
+            </div>
+            <span className="setup-index">01 / 03</span>
+          </div>
+
+          <fieldset className="control-group">
+            <legend>Board size</legend>
+            <div className="segment-control">
+              {Object.entries(DIFFICULTIES).map(([key, value]) => (
+                <button key={key} type="button" aria-pressed={difficulty === key} className={difficulty === key ? 'selected' : ''} onClick={() => onDifficultyChange(key)}>
+                  <span>{value.name}</span><small>{value.grid}×{value.grid}</small>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="control-group">
+            <legend>Card deck</legend>
+            <div className="theme-grid">
+              {Object.entries(THEMES).map(([key, value]) => (
+                <button key={key} type="button" aria-pressed={theme === key} className={theme === key ? 'selected' : ''} onClick={() => onThemeChange(key)}>
+                  <span className="theme-icon">{value.icon}</span>
+                  <span>{value.name}</span>
+                  {theme === key && <span className="selection-check"><Icon name="check" size={13} strokeWidth={2.5} /></span>}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="control-group">
+            <legend>Game mode</legend>
+            <div className="mode-list">
+              {Object.entries(MODES).map(([key, value]) => (
+                <button key={key} type="button" aria-pressed={mode === key} className={mode === key ? 'selected' : ''} onClick={() => setMode(key)}>
+                  <span className="radio-dot" />
+                  <span className="mode-copy"><strong>{value.label}</strong><small>{value.description}</small></span>
+                  <span className="mode-meta">{value.meta}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <button className="primary-action" type="button" onClick={() => onStart(mode)}>
+            <span><Icon name="play" size={18} /> Start game</span>
+            <Icon name="chevronRight" size={19} />
+          </button>
+
+          <div className="personal-best" aria-live="polite">
+            <Icon name="trophy" size={17} />
+            {score ? (
+              <span>Personal best: <strong>{score.moves} moves</strong> in {formatTime(score.time)}</span>
+            ) : (
+              <span>No score for this board yet — set the first.</span>
+            )}
+          </div>
+        </section>
       </div>
 
-      {/* Difficulty */}
-      <div className="glass p-6 w-full max-w-md">
-        <h2 className="text-sm font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          Difficulty
-        </h2>
-        <div className="flex gap-3">
-          {Object.entries(DIFFICULTIES).map(([key, val]) => (
-            <button
-              key={key}
-              className={`btn-glass flex-1 text-center ${difficulty === key ? 'active' : ''}`}
-              onClick={() => onDifficultyChange(key)}
-            >
-              {val.name}
-              <span className="block text-xs mt-1" style={{ opacity: 0.5 }}>{val.grid}×{val.grid}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Theme */}
-      <div className="glass p-6 w-full max-w-md">
-        <h2 className="text-sm font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          Card Theme
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          {Object.entries(THEMES).map(([key, val]) => (
-            <button
-              key={key}
-              className={`btn-glass text-center ${theme === key ? 'active' : ''}`}
-              onClick={() => onThemeChange(key)}
-            >
-              <span className="text-xl mr-2">{val.icon}</span>
-              {val.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Game Mode */}
-      <div className="flex gap-4 w-full max-w-md">
-        <button
-          className="btn-glass text-lg flex-1 py-4 font-semibold"
-          onClick={() => onStart('classic')}
-          style={{
-            border: '1px solid rgba(99,102,241,0.5)',
-            background: 'rgba(99,102,241,0.1)',
-          }}
-        >
-          ▶ Classic
-        </button>
-        <button
-          className="btn-glass text-lg flex-1 py-4 font-semibold"
-          onClick={() => onStart('timed')}
-          style={{
-            border: '1px solid rgba(239,68,68,0.5)',
-            background: 'rgba(239,68,68,0.1)',
-          }}
-        >
-          ⏱️ Timed (60s)
-        </button>
-      </div>
-    </div>
+      <footer className="menu-footer"><span>Designed for mouse, touch & keyboard</span><span>Scores stay on your device</span></footer>
+    </main>
   )
 }

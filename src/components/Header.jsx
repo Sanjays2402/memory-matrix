@@ -1,69 +1,38 @@
-import { formatTime } from '../gameLogic'
+import { formatTime, DIFFICULTIES, THEMES } from '../gameLogic'
+import { Icon } from './Icons'
 
-export default function Header({ moves, time, stars, combo, soundOn, setSoundOn, hintUsed, onHint, mode, peeking }) {
+export default function Header({ moves, time, stars, combo, soundOn, setSoundOn, hintUsed, onHint, mode, peeking, difficulty, theme, matchedCount }) {
   const isTimedLow = mode === 'timed' && time <= 10
+  const pairs = DIFFICULTIES[difficulty].pairs
+  const progress = pairs ? Math.round((matchedCount / pairs) * 100) : 0
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-      {/* Peeking indicator */}
-      {peeking && (
-        <div className="stat-pill" style={{ background: 'rgba(168,85,247,0.2)', border: '1px solid rgba(168,85,247,0.5)' }}>
-          <span>👀</span>
-          <span style={{ color: '#c084fc' }}>Memorize!</span>
-        </div>
-      )}
-
-      {/* Moves */}
-      <div className="stat-pill">
-        <span style={{ opacity: 0.6 }}>🎯</span>
-        <span>{moves} moves</span>
+    <section className="game-hud" aria-label="Game status">
+      <div className="round-context">
+        <span className="round-kicker">{mode === 'timed' ? 'Time attack' : 'Classic round'}</span>
+        <strong>{DIFFICULTIES[difficulty].name} · {THEMES[theme].name}</strong>
       </div>
 
-      {/* Timer */}
-      <div className={`stat-pill ${isTimedLow ? 'timer-warning' : ''}`} style={
-        mode === 'timed' ? {
-          border: `1px solid ${isTimedLow ? 'rgba(239,68,68,0.6)' : 'rgba(239,68,68,0.3)'}`,
-          background: isTimedLow ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.05)',
-        } : {}
-      }>
-        <span style={{ opacity: 0.6 }}>{mode === 'timed' ? '⏱️' : '⏱️'}</span>
-        <span style={isTimedLow ? { color: '#f87171', fontWeight: 700 } : {}}>{formatTime(time)}</span>
+      <div className="progress-block">
+        <div className="progress-copy"><span>{peeking ? 'Memorize the board' : 'Pairs found'}</span><strong>{matchedCount} / {pairs}</strong></div>
+        <div className="progress-track"><span style={{ width: peeking ? '100%' : `${progress}%` }} /></div>
       </div>
 
-      {/* Stars (only in classic mode) */}
-      {mode !== 'timed' && (
-        <div className="stat-pill">
-          {[1, 2, 3].map(i => (
-            <span key={i} className={`star ${i <= stars ? 'filled' : ''}`}>★</span>
-          ))}
-        </div>
-      )}
+      <div className="stat-row">
+        <div className="hud-stat"><Icon name="moves" /><span><small>Moves</small><strong>{moves}</strong></span></div>
+        <div className={`hud-stat ${isTimedLow ? 'danger' : ''}`}><Icon name="timer" /><span><small>{mode === 'timed' ? 'Remaining' : 'Time'}</small><strong>{formatTime(time)}</strong></span></div>
+        {mode !== 'timed' && <div className="hud-stat star-stat" aria-label={`${stars} of 3 stars`}><span><small>Rating</small><strong>{[1,2,3].map(i => <b key={i} className={i <= stars ? 'filled' : ''}>★</b>)}</strong></span></div>}
+        {combo >= 2 && <div className="hud-stat combo-stat"><Icon name="flame" /><span><small>Streak</small><strong>{combo}×</strong></span></div>}
+      </div>
 
-      {/* Combo */}
-      {combo >= 2 && (
-        <div className="combo-badge">
-          🔥 {combo}x Combo!
-        </div>
-      )}
-
-      {/* Hint */}
-      <button
-        className={`btn-glass ${hintUsed ? 'opacity-40 cursor-not-allowed' : ''}`}
-        onClick={onHint}
-        disabled={hintUsed}
-        title={hintUsed ? 'Hint already used' : 'Peek at all cards (1s)'}
-      >
-        💡 Hint
-      </button>
-
-      {/* Sound */}
-      <button
-        className="btn-glass"
-        onClick={() => setSoundOn(!soundOn)}
-        title={soundOn ? 'Mute sounds' : 'Enable sounds'}
-      >
-        {soundOn ? '🔊' : '🔇'}
-      </button>
-    </div>
+      <div className="hud-actions">
+        <button type="button" className="text-action" onClick={onHint} disabled={hintUsed || peeking} title={hintUsed ? 'Focus peek already used' : 'Reveal all cards for one second'}>
+          <Icon name="sparkles" /><span>{hintUsed ? 'Peek used' : 'Focus peek'}</span>
+        </button>
+        <button type="button" className="icon-action" onClick={() => setSoundOn(!soundOn)} aria-label={soundOn ? 'Mute sounds' : 'Enable sounds'} title={soundOn ? 'Mute sounds' : 'Enable sounds'}>
+          <Icon name={soundOn ? 'volume' : 'volumeOff'} />
+        </button>
+      </div>
+    </section>
   )
 }

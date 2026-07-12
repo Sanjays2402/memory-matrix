@@ -6,9 +6,10 @@ import Menu from './components/Menu'
 import Header from './components/Header'
 import GameBoard from './components/GameBoard'
 import VictoryOverlay from './components/VictoryOverlay'
+import { Icon } from './components/Icons'
 
 export default function App() {
-  const [screen, setScreen] = useState('menu') // menu | playing
+  const [screen, setScreen] = useState('menu')
   const game = useGame()
 
   const handleStart = (selectedMode) => {
@@ -16,16 +17,11 @@ export default function App() {
     setScreen('playing')
   }
 
-  const handleMenu = () => {
-    setScreen('menu')
-  }
-
-  const handlePlayAgain = () => {
-    game.startGame(game.difficulty, game.theme, game.mode)
-  }
+  const handleMenu = () => setScreen('menu')
+  const handlePlayAgain = () => game.startGame(game.difficulty, game.theme, game.mode)
 
   return (
-    <div className="min-h-screen relative" style={{ background: '#0a0a0f' }}>
+    <div className="app-shell">
       <BackgroundOrbs />
 
       {screen === 'menu' && (
@@ -39,21 +35,14 @@ export default function App() {
       )}
 
       {screen === 'playing' && (
-        <div className="p-4 sm:p-6 relative" style={{ zIndex: 1 }}>
-          {/* Title + Back */}
-          <div className="flex items-center justify-between mb-4">
-            <button className="btn-glass text-sm" onClick={handleMenu}>
-              ← Menu
-            </button>
-            <h1 className="text-lg font-bold" style={{
-              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>
-              Memory Matrix
-            </h1>
-            <div style={{ width: 80 }} /> {/* spacer */}
-          </div>
+        <main className="game-shell">
+          <nav className="game-nav" aria-label="Game navigation">
+            <button className="back-action" type="button" onClick={handleMenu}><Icon name="arrowLeft" /> <span>Setup</span></button>
+            <a className="brand compact" href="./" onClick={(event) => { event.preventDefault(); handleMenu() }}>
+              <span className="brand-mark"><i /><i /><i /><i /></span><span>Memory Matrix</span>
+            </a>
+            <button className="new-round-action" type="button" onClick={handlePlayAgain}><Icon name="rotate" /> <span>New round</span></button>
+          </nav>
 
           <Header
             moves={game.moves}
@@ -66,6 +55,9 @@ export default function App() {
             onHint={game.useHint}
             mode={game.mode}
             peeking={game.peeking}
+            difficulty={game.difficulty}
+            theme={game.theme}
+            matchedCount={game.matchedPairIds.size}
           />
 
           <GameBoard
@@ -81,7 +73,9 @@ export default function App() {
             difficulty={game.difficulty}
             onCardClick={game.flipCard}
           />
-        </div>
+
+          <p className="game-tip">Select two cards to find a pair <span>·</span> Focus peek can be used once</p>
+        </main>
       )}
 
       {game.gameOver && (
