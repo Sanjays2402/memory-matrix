@@ -1,3 +1,5 @@
+import { PROGRAMMING_CARDS } from './programmingDeck'
+
 // Card theme definitions
 export const THEMES = {
   emoji: {
@@ -8,10 +10,10 @@ export const THEMES = {
   },
   programming: {
     name: 'Programming',
-    icon: '💻',
-    color: '#6366f1',
-    cards: ['JS', 'PY', 'RS', 'GO', 'TS', 'RB', 'C#', 'C+', 'SW', 'KT', 'LU', 'PH', 'JV', 'HS', 'EX', 'DA', 'R', 'SC', 'ZG', 'NM', 'CR', 'JL', 'EL', 'CL', 'PL', 'ML', 'VB', 'AS', 'OC', 'F#', 'TC', 'VL'],
-    colors: ['#f7df1e', '#3776ab', '#ff4500', '#00add8', '#3178c6', '#cc342d', '#68217a', '#00599c', '#fa7343', '#7f52ff', '#000080', '#777bb4', '#ed8b00', '#5e5086', '#6e4a7e', '#00b4ab', '#276dc3', '#dc322f', '#f69a1b', '#16aa72', '#000', '#9558b2', '#6e4a7e', '#3f85a4', '#39457e', '#e37933', '#68217a', '#b3430c', '#438eff', '#b845fc', '#ef4223', '#4e56a6'],
+    icon: '⌘',
+    color: '#61dafb',
+    cards: PROGRAMMING_CARDS,
+    imageDeck: true,
   },
   space: {
     name: 'Space',

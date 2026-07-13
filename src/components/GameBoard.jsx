@@ -5,7 +5,14 @@ export default function GameBoard({ cards, flippedIds, matchedPairIds, shakeIds,
   const gridSize = DIFFICULTIES[difficulty].grid
 
   return (
-    <div className="board-wrap">
+    <div className={`board-wrap board-theme-${theme}`}>
+      {theme === 'programming' && (
+        <div className="code-chrome" aria-hidden="true">
+          <span className="code-dots"><i /><i /><i /></span>
+          <code>~/memory-matrix <b>git:(main)</b></code>
+          <span>npm run focus</span>
+        </div>
+      )}
       <div className="board-corners" aria-hidden="true"><i /><i /><i /><i /></div>
       <div
         role="group"

@@ -13,6 +13,12 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
   const config = DIFFICULTIES[difficulty]
   const themeData = THEMES[theme]
   const previewSymbols = themeData.cards.slice(0, 6)
+  const renderPreviewSymbol = (symbol) => themeData.imageDeck ? (
+    <span className="preview-technology" style={{ '--preview-accent': symbol.color }}>
+      <img src={symbol.image} alt="" draggable="false" />
+      <small>{symbol.name}</small>
+    </span>
+  ) : theme === 'numbers' ? <strong>{symbol}</strong> : symbol
 
   return (
     <main className="menu-shell">
@@ -32,15 +38,15 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
           <h1 id="game-title">Find the pairs.<br /><em>Train your focus.</em></h1>
           <p>Flip, remember, and match every card. Choose your challenge, build a streak, and set a new personal best.</p>
 
-          <div className="preview-stage" aria-hidden="true">
+          <div className={`preview-stage preview-stage-${theme}`} aria-hidden="true">
             <div className="preview-meta">
               <span>{themeData.name} deck</span>
               <span>{config.grid} × {config.grid}</span>
             </div>
             <div className="preview-cards">
               {previewSymbols.map((symbol, index) => (
-                <div key={`${theme}-${symbol}`} className={`preview-card preview-card-${index + 1}`}>
-                  {theme === 'programming' || theme === 'numbers' ? <strong>{symbol}</strong> : symbol}
+                <div key={`${theme}-${typeof symbol === 'object' ? symbol.name : symbol}`} className={`preview-card preview-card-${index + 1}`}>
+                  {renderPreviewSymbol(symbol)}
                 </div>
               ))}
               <div className="preview-card preview-card-hidden"><span className="card-glyph">M</span></div>
@@ -78,7 +84,7 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
             <div className="theme-grid">
               {Object.entries(THEMES).map(([key, value]) => (
                 <button key={key} type="button" aria-pressed={theme === key} className={theme === key ? 'selected' : ''} onClick={() => onThemeChange(key)}>
-                  <span className="theme-icon">{value.icon}</span>
+                  <span className={`theme-icon ${value.imageDeck ? 'theme-icon-code' : ''}`}>{value.icon}</span>
                   <span>{value.name}</span>
                   {theme === key && <span className="selection-check"><Icon name="check" size={13} strokeWidth={2.5} /></span>}
                 </button>

@@ -1,14 +1,17 @@
 import { THEMES } from '../gameLogic'
+import { getCardLabel } from '../programmingDeck'
 import { Icon } from './Icons'
 
 export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAnim, showHint, peeking, peekProgress, cardIndex, theme, positionLabel = '', onClick }) {
   const themeData = THEMES[theme]
   const isRevealed = isFlipped || showHint || (peeking && peekProgress === 0)
-  const isTextTheme = theme === 'programming' || theme === 'numbers'
+  const isTextTheme = theme === 'numbers'
+  const isImageTheme = Boolean(themeData.imageDeck && card.symbol?.image)
   const staggerDelay = peekProgress === 1 ? `${cardIndex * 24}ms` : '0ms'
   const colorIndex = themeData.cards.indexOf(card.symbol)
-  const cardColor = themeData.colors?.[colorIndex] || themeData.color
-  const cardStateLabel = isMatched ? `Card: ${card.symbol}, matched` : isRevealed ? `Card: ${card.symbol}` : 'Hidden card'
+  const cardColor = card.symbol?.color || themeData.colors?.[colorIndex] || themeData.color
+  const cardLabel = getCardLabel(card.symbol)
+  const cardStateLabel = isMatched ? `Card: ${cardLabel}, matched` : isRevealed ? `Card: ${cardLabel}` : 'Hidden card'
   const accessibleName = positionLabel ? `${cardStateLabel}, ${positionLabel}` : cardStateLabel
 
   const cardClasses = ['card-container', isMatched && !isMatchAnim ? 'is-matched' : '', isMatchAnim ? 'is-matching' : '', isShaking ? 'is-wrong' : ''].filter(Boolean).join(' ')
@@ -28,8 +31,15 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
           <span className="card-glyph">M</span>
           <span className="card-index">{String(cardIndex + 1).padStart(2, '0')}</span>
         </span>
-        <span className="card-face card-back">
-          <span className={isTextTheme ? 'card-symbol text-symbol' : 'card-symbol'}>{card.symbol}</span>
+        <span className={`card-face card-back ${isImageTheme ? 'card-back-image' : ''}`}>
+          {isImageTheme ? (
+            <span className="technology-mark">
+              <img className="technology-logo" src={card.symbol.image} alt={cardLabel} draggable="false" />
+              <span>{cardLabel}</span>
+            </span>
+          ) : (
+            <span className={isTextTheme ? 'card-symbol text-symbol' : 'card-symbol'}>{card.symbol}</span>
+          )}
           {isMatched && <span className="match-check"><Icon name="check" size={12} strokeWidth={3} /></span>}
         </span>
       </span>

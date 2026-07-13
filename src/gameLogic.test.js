@@ -28,6 +28,16 @@ describe('generateCards', () => {
     expect(Object.values(pairCounts)).toEqual(Array(8).fill(2))
   })
 
+  test('creates image-backed programming cards with accessible labels', () => {
+    const cards = generateCards('easy', 'programming', () => 0)
+
+    expect(cards[0].symbol).toEqual(expect.objectContaining({
+      name: expect.any(String),
+      image: expect.stringMatching(/^\.\/programming-logos\/.+\.svg$/),
+      color: expect.stringMatching(/^#/),
+    }))
+  })
+
   test('rejects an unknown difficulty', () => {
     expect(() => generateCards('impossible', 'emoji')).toThrow('Unknown difficulty: impossible')
   })

@@ -4,6 +4,12 @@ import { describe, expect, test, vi } from 'vitest'
 import Card from './Card'
 
 const CARD = { id: 'card-0-a', symbol: '🎮', pairId: 'card-0' }
+const PROGRAMMING_CARD = {
+  id: 'card-0-a',
+  symbol: { name: 'JavaScript', image: './programming-logos/javascript.svg', color: '#f7df1e' },
+  pairId: 'card-0',
+}
+
 const DEFAULTS = {
   card: CARD,
   isFlipped: false,
@@ -34,6 +40,13 @@ describe('Card accessibility', () => {
     await userEvent.keyboard('{Enter}')
 
     expect(onClick).toHaveBeenCalledWith(CARD.id)
+  })
+
+  test('renders a programming logo image with an accessible card name', () => {
+    render(<Card {...DEFAULTS} card={PROGRAMMING_CARD} theme="programming" isFlipped onClick={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: 'Card: JavaScript' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'JavaScript' })).toHaveAttribute('src', './programming-logos/javascript.svg')
   })
 
   test('exposes a revealed symbol and disables a matched card', () => {

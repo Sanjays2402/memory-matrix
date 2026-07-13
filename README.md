@@ -40,6 +40,19 @@
   </tr>
 </table>
 
+<table>
+  <tr>
+    <td width="33%"><img src="docs/screenshots/06-programming-setup.png" alt="Programming deck setup with real technology logo previews"></td>
+    <td width="33%"><img src="docs/screenshots/07-programming-gameplay.png" alt="Programming deck gameplay with technology logos in a terminal-inspired board"></td>
+    <td width="33%"><img src="docs/screenshots/08-programming-mobile.png" alt="Programming deck with self-hosted technology logos on mobile"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Choose your stack</strong></td>
+    <td align="center"><strong>Terminal-inspired play</strong></td>
+    <td align="center"><strong>Real logos on mobile</strong></td>
+  </tr>
+</table>
+
 ---
 
 ## Why it is fun
@@ -51,6 +64,7 @@ Memory Matrix starts with familiar pair matching, then adds a light arcade layer
 - **Race the clock** — Time Attack begins at 60 seconds and successful matches add **2–4 bonus seconds**, depending on board size.
 - **Chase mastery** — improve your move count, finish time, star rating, and longest streak.
 - **Choose your vibe** — play Emoji, Programming, Space, Animals, or Numbers decks.
+- **Learn by sight** — the Programming deck uses 32 real, self-hosted technology logos instead of letter abbreviations.
 - **Use one Focus Peek** — reveal the board once when you are stuck; the trade-off is half points for the rest of that round.
 
 ## Game modes
@@ -145,6 +159,14 @@ src/
 ## Contributing
 
 Ideas and fixes are welcome. Open an [issue](https://github.com/Sanjays2402/memory-matrix/issues/new) or submit a pull request with a focused change and passing quality checks.
+
+## Asset credits
+
+Programming deck logos are provided by [Simple Icons](https://simpleicons.org/) under
+[CC0 1.0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md) and
+stored locally for reliable, privacy-friendly play. Individual marks remain subject
+to their respective trademark guidelines. See the full
+[asset attribution](public/programming-logos/ATTRIBUTION.md).
 
 ## License
 
