@@ -10,6 +10,48 @@ describe('useGame timed-mode completion', () => {
 
   afterEach(() => vi.useRealTimers())
 
+  test('starts the same daily challenge configuration and card order', () => {
+    const first = renderHook(() => useGame())
+    const second = renderHook(() => useGame())
+
+    act(() => {
+      first.result.current.setSoundOn(false)
+      second.result.current.setSoundOn(false)
+      first.result.current.startGame('easy', 'emoji', 'daily')
+      second.result.current.startGame('hard', 'animals', 'daily')
+    })
+
+    expect(first.result.current.mode).toBe('daily')
+    expect(first.result.current.difficulty).toBe('medium')
+    expect(first.result.current.theme).toBe(first.result.current.dailyChallenge.theme)
+    expect(first.result.current.cards.map(card => card.id)).toEqual(second.result.current.cards.map(card => card.id))
+  })
+
+  test('records a completed daily puzzle and its final score', () => {
+    const { result } = renderHook(() => useGame())
+
+    act(() => {
+      result.current.setSoundOn(false)
+      result.current.startGame('easy', 'emoji', 'daily')
+    })
+    act(() => vi.advanceTimersByTime(2_800))
+
+    const pairs = Object.values(result.current.cards.reduce((groups, card) => {
+      groups[card.pairId] = [...(groups[card.pairId] || []), card]
+      return groups
+    }, {}))
+
+    for (const pair of pairs) {
+      act(() => result.current.flipCard(pair[0].id))
+      act(() => result.current.flipCard(pair[1].id))
+      act(() => vi.advanceTimersByTime(800))
+    }
+
+    expect(result.current.gameOver).toBe(true)
+    expect(result.current.dailyProgress.lastCompleted).toBe(result.current.dailyChallenge.key)
+    expect(result.current.dailyProgress.results[result.current.dailyChallenge.key].score).toBe(result.current.score)
+  })
+
   test('awards points and bonus time for a timed match', () => {
     const { result } = renderHook(() => useGame())
 

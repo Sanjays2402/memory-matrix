@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { calculateMatchReward, formatTime, generateCards, getBestScores, getTimedBonus, saveBestScore, shuffle } from './gameLogic'
+import { THEMES, calculateMatchReward, completeDailyChallenge, createSeededRng, formatTime, generateCards, getBestScore, getBestScores, getDailyChallenge, getDailyProgress, getTimedBonus, saveBestScore, shuffle } from './gameLogic'
 
 describe('shuffle', () => {
   test('does not mutate its input', () => {
@@ -71,14 +71,78 @@ describe('best scores', () => {
     localStorage.setItem('memory-matrix-scores', JSON.stringify({ 'easy-emoji': 'corrupt' }))
 
     expect(saveBestScore('easy', 'emoji', { moves: 8, time: 20, stars: 3 })).toBe(true)
-    expect(getBestScores()['easy-emoji']).toMatchObject({ moves: 8, time: 20, stars: 3 })
+    expect(getBestScore('easy', 'emoji')).toMatchObject({ moves: 8, time: 20, stars: 3 })
   })
 
   test('keeps a lower-move score even when a slower score arrives later', () => {
     expect(saveBestScore('easy', 'emoji', { moves: 8, time: 30, stars: 3 })).toBe(true)
     expect(saveBestScore('easy', 'emoji', { moves: 9, time: 20, stars: 3 })).toBe(false)
 
-    expect(getBestScores()['easy-emoji']).toMatchObject({ moves: 8, time: 30 })
+    expect(getBestScore('easy', 'emoji')).toMatchObject({ moves: 8, time: 30 })
+  })
+
+  test('keeps Classic and Time Attack records separate', () => {
+    saveBestScore('easy', 'emoji', { moves: 8, time: 30, score: 900 }, 'classic')
+    saveBestScore('easy', 'emoji', { moves: 12, time: 18, score: 1500 }, 'timed')
+
+    expect(getBestScore('easy', 'emoji', 'classic')).toMatchObject({ moves: 8, time: 30 })
+    expect(getBestScore('easy', 'emoji', 'timed')).toMatchObject({ score: 1500, time: 18 })
+  })
+
+  test('prefers a higher Time Attack score, then more remaining time', () => {
+    expect(saveBestScore('easy', 'emoji', { moves: 12, time: 18, score: 1500 }, 'timed')).toBe(true)
+    expect(saveBestScore('easy', 'emoji', { moves: 11, time: 25, score: 1400 }, 'timed')).toBe(false)
+    expect(saveBestScore('easy', 'emoji', { moves: 13, time: 22, score: 1500 }, 'timed')).toBe(true)
+
+    expect(getBestScore('easy', 'emoji', 'timed')).toMatchObject({ score: 1500, time: 22 })
+  })
+})
+
+describe('daily challenge', () => {
+  beforeEach(() => localStorage.clear())
+
+  test('creates the same deterministic card order for the same seed', () => {
+    const first = generateCards('medium', 'programming', createSeededRng('2026-07-12'))
+    const second = generateCards('medium', 'programming', createSeededRng('2026-07-12'))
+    const another = generateCards('medium', 'programming', createSeededRng('2026-07-13'))
+
+    expect(first.map(card => card.id)).toEqual(second.map(card => card.id))
+    expect(first.map(card => card.id)).not.toEqual(another.map(card => card.id))
+  })
+
+  test('rotates a medium daily challenge deck by UTC date', () => {
+    const challenge = getDailyChallenge(new Date('2026-07-12T17:00:00Z'))
+
+    expect(challenge).toMatchObject({ key: '2026-07-12', difficulty: 'medium' })
+    expect(THEMES).toHaveProperty(challenge.theme)
+    expect(challenge.seed).toContain('2026-07-12')
+  })
+
+  test('increments consecutive daily completions without double-counting a replay', () => {
+    expect(completeDailyChallenge('2026-07-11', { score: 900, moves: 20, time: 55 })).toMatchObject({ streak: 1 })
+    expect(completeDailyChallenge('2026-07-12', { score: 1200, moves: 18, time: 49 })).toMatchObject({ streak: 2 })
+    expect(completeDailyChallenge('2026-07-12', { score: 1100, moves: 19, time: 50 })).toMatchObject({ streak: 2 })
+    expect(getDailyProgress()).toMatchObject({ lastCompleted: '2026-07-12', streak: 2 })
+  })
+
+  test('does not move the active streak backward when replaying an older puzzle', () => {
+    completeDailyChallenge('2026-07-11', { score: 900, moves: 20, time: 55 })
+    completeDailyChallenge('2026-07-12', { score: 1200, moves: 18, time: 49 })
+    completeDailyChallenge('2026-07-10', { score: 1500, moves: 17, time: 45 })
+
+    const progress = getDailyProgress()
+    expect(progress).toMatchObject({ lastCompleted: '2026-07-12', streak: 2 })
+    expect(progress.results['2026-07-10']).toMatchObject({ score: 1500 })
+  })
+
+  test('resets the streak after a missed day and preserves the better same-day score', () => {
+    completeDailyChallenge('2026-07-09', { score: 800, moves: 24, time: 70 })
+    completeDailyChallenge('2026-07-12', { score: 1000, moves: 22, time: 60 })
+    completeDailyChallenge('2026-07-12', { score: 1400, moves: 20, time: 54 })
+
+    const progress = getDailyProgress()
+    expect(progress.streak).toBe(1)
+    expect(progress.results['2026-07-12']).toMatchObject({ score: 1400, moves: 20 })
   })
 })
 

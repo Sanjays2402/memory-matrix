@@ -1,7 +1,7 @@
 import { formatTime, DIFFICULTIES, THEMES } from '../gameLogic'
 import { Icon } from './Icons'
 
-export default function Header({ moves, time, stars, combo, score, lastReward, soundOn, setSoundOn, hintUsed, onHint, mode, peeking, difficulty, theme, matchedCount }) {
+export default function Header({ moves, time, stars, combo, score, lastReward, soundOn, setSoundOn, hintUsed, onHint, mode, dailyStreak, peeking, difficulty, theme, matchedCount }) {
   const isTimedLow = mode === 'timed' && time <= 10
   const pairs = DIFFICULTIES[difficulty].pairs
   const progress = pairs ? Math.round((matchedCount / pairs) * 100) : 0
@@ -9,7 +9,7 @@ export default function Header({ moves, time, stars, combo, score, lastReward, s
   return (
     <section className="game-hud" aria-label="Game status">
       <div className="round-context">
-        <span className="round-kicker">{mode === 'timed' ? 'Time attack' : 'Classic round'}</span>
+        <span className="round-kicker">{mode === 'timed' ? 'Time attack' : mode === 'daily' ? `Daily challenge · ${dailyStreak || 0} day streak` : 'Classic round'}</span>
         <strong>{DIFFICULTIES[difficulty].name} · {THEMES[theme].name}</strong>
       </div>
 

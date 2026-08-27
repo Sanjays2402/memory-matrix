@@ -1,11 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { DIFFICULTIES, calculateMatchReward, generateCards, getStarRating, getTimedBonus, saveBestScore, formatTime } from './gameLogic'
+import { DIFFICULTIES, calculateMatchReward, completeDailyChallenge, createSeededRng, generateCards, getDailyChallenge, getDailyProgress, getStarRating, getTimedBonus, saveBestScore, formatTime } from './gameLogic'
 import { playFlip, playMatch, playNoMatch, playCombo, playVictory, playHint } from './sounds'
 
 export function useGame() {
   const [difficulty, setDifficulty] = useState('easy')
   const [theme, setTheme] = useState('emoji')
-  const [mode, setMode] = useState('classic') // 'classic' | 'timed'
+  const [mode, setMode] = useState('classic') // 'classic' | 'timed' | 'daily'
+  const [dailyChallenge, setDailyChallenge] = useState(() => getDailyChallenge())
+  const [dailyProgress, setDailyProgress] = useState(() => getDailyProgress())
   const [cards, setCards] = useState([])
   const [flippedIds, setFlippedIds] = useState([])
   const [matchedPairIds, setMatchedPairIds] = useState(new Set())
@@ -35,15 +37,17 @@ export function useGame() {
   const modeRef = useRef('classic')
 
   const startGame = useCallback((diff, th, md) => {
-    const d = diff || difficulty
-    const t = th || theme
     const m = md || mode
+    const challenge = m === 'daily' ? getDailyChallenge() : null
+    const d = challenge?.difficulty || diff || difficulty
+    const t = challenge?.theme || th || theme
+    if (challenge) setDailyChallenge(challenge)
     setDifficulty(d)
     setTheme(t)
     setMode(m)
     modeRef.current = m
 
-    const newCards = generateCards(d, t)
+    const newCards = generateCards(d, t, challenge ? createSeededRng(challenge.seed) : Math.random)
     totalPairs.current = newCards.length / 2
 
     setCards(newCards)
@@ -101,7 +105,7 @@ export function useGame() {
     }, 2800)
   }, [difficulty, theme, mode])
 
-  const endGame = useCallback((currentMoves, currentTime, reason = 'win') => {
+  const endGame = useCallback((currentMoves, currentTime, reason = 'win', currentScore = score) => {
     setGameOver(true)
     setGameOverReason(reason)
     setIsPlaying(false)
@@ -115,9 +119,18 @@ export function useGame() {
         stars,
       })
       setNewBest(isBest)
+      if (modeRef.current === 'daily') {
+        const progress = completeDailyChallenge(dailyChallenge.key, {
+          score: currentScore,
+          moves: currentMoves,
+          time: currentTime,
+          stars,
+        })
+        setDailyProgress(progress)
+      }
     }
     if (soundOn) playVictory()
-  }, [difficulty, theme, soundOn])
+  }, [difficulty, theme, soundOn, score, dailyChallenge.key])
 
   const flipCard = useCallback((cardId) => {
     if (locked || gameOver || showHint || peeking) return
@@ -141,9 +154,10 @@ export function useGame() {
         // Match!
         const newCombo = combo + 1
         const points = calculateMatchReward(newCombo, hintUsed)
+        const newScore = score + points
         const timeBonus = modeRef.current === 'timed' ? getTimedBonus(difficulty) : 0
         setCombo(newCombo)
-        setScore(current => current + points)
+        setScore(newScore)
         setLastReward({ id: Date.now(), points, timeBonus, combo: newCombo })
         if (timeBonus) setTime(current => current + timeBonus)
         if (newCombo > maxCombo) setMaxCombo(newCombo)
@@ -165,7 +179,7 @@ export function useGame() {
 
           // Check victory
           if (newMatched.size === totalPairs.current) {
-            endGame(newMoves, time, 'win')
+            endGame(newMoves, time, 'win', newScore)
           }
         }, 800)
       } else {
@@ -184,7 +198,7 @@ export function useGame() {
         }, 800)
       }
     }
-  }, [cards, flippedIds, locked, gameOver, showHint, peeking, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame, hintUsed, difficulty])
+  }, [cards, flippedIds, locked, gameOver, showHint, peeking, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame, hintUsed, difficulty, score])
 
   const useHintFn = useCallback(() => {
     if (hintUsed || !isPlaying || gameOver) return
@@ -221,7 +235,7 @@ export function useGame() {
   const isPerfect = gameOver && gameOverReason === 'win' && mistakes === 0
 
   return {
-    difficulty, theme, mode, cards, flippedIds, matchedPairIds,
+    difficulty, theme, mode, dailyChallenge, dailyProgress, cards, flippedIds, matchedPairIds,
     moves, mistakes, time, isPlaying, gameOver, gameOverReason,
     combo, maxCombo, score, lastReward,
     locked, hintUsed, showHint, soundOn, newBest, stars,

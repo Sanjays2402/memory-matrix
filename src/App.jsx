@@ -21,13 +21,15 @@ export default function App() {
   const handlePlayAgain = () => game.startGame(game.difficulty, game.theme, game.mode)
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell theme-${game.theme} screen-${screen} mode-${game.mode}`}>
       <BackgroundOrbs />
 
       {screen === 'menu' && (
         <Menu
           difficulty={game.difficulty}
           theme={game.theme}
+          dailyChallenge={game.dailyChallenge}
+          dailyProgress={game.dailyProgress}
           onDifficultyChange={game.setDifficulty}
           onThemeChange={game.setTheme}
           onStart={handleStart}
@@ -56,6 +58,7 @@ export default function App() {
             hintUsed={game.hintUsed}
             onHint={game.useHint}
             mode={game.mode}
+            dailyStreak={game.dailyProgress.streak}
             peeking={game.peeking}
             difficulty={game.difficulty}
             theme={game.theme}
@@ -94,6 +97,8 @@ export default function App() {
           gameOverReason={game.gameOverReason}
           matchedCount={game.matchedPairIds.size}
           mode={game.mode}
+          theme={game.theme}
+          dailyStreak={game.dailyProgress.streak}
           onPlayAgain={handlePlayAgain}
           onMenu={handleMenu}
         />

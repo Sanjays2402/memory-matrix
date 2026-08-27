@@ -65,6 +65,7 @@ Memory Matrix starts with familiar pair matching, then adds a light arcade layer
 - **Chase mastery** — improve your move count, finish time, star rating, and longest streak.
 - **Choose your vibe** — play Emoji, Programming, Space, Animals, or Numbers decks.
 - **Learn by sight** — the Programming deck uses 32 real, self-hosted technology logos instead of letter abbreviations.
+- **Return every day** — everyone gets the same deterministic Daily Challenge, with a rotating deck and a persistent completion streak.
 - **Use one Focus Peek** — reveal the board once when you are stuck; the trade-off is half points for the rest of that round.
 
 ## Game modes
@@ -73,6 +74,7 @@ Memory Matrix starts with familiar pair matching, then adds a light arcade layer
 |---|---|---|
 | **Classic** | Clear the board efficiently | Earn up to three stars based on move count |
 | **Time Attack** | Match as many pairs as possible before time expires | Every match adds bonus time |
+| **Daily Challenge** | Complete the shared medium puzzle | A new deterministic board and rotating deck every UTC day |
 
 ## Boards and decks
 

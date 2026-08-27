@@ -46,7 +46,9 @@ describe('Card accessibility', () => {
     render(<Card {...DEFAULTS} card={PROGRAMMING_CARD} theme="programming" isFlipped onClick={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: 'Card: JavaScript' })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: 'JavaScript' })).toHaveAttribute('src', './programming-logos/javascript.svg')
+    const logo = screen.getByRole('img', { name: 'JavaScript' })
+    expect(logo).toHaveStyle({ '--logo-color': '#f7df1e' })
+    expect(logo.getAttribute('style')).toContain('programming-logos/javascript.svg')
   })
 
   test('exposes a revealed symbol and disables a matched card', () => {

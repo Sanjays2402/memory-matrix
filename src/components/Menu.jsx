@@ -5,20 +5,24 @@ import { Icon } from './Icons'
 const MODES = {
   classic: { label: 'Classic', description: 'Relaxed play', meta: 'No time limit' },
   timed: { label: 'Time attack', description: 'Beat the clock', meta: '60 seconds' },
+  daily: { label: 'Daily challenge', description: 'One shared puzzle', meta: 'New every day' },
 }
 
-export default function Menu({ difficulty, theme, onDifficultyChange, onThemeChange, onStart }) {
+export default function Menu({ difficulty, theme, dailyChallenge, dailyProgress, onDifficultyChange, onThemeChange, onStart }) {
   const [mode, setMode] = useState('classic')
-  const score = useMemo(() => getBestScores()[`${difficulty}-${theme}`], [difficulty, theme])
-  const config = DIFFICULTIES[difficulty]
-  const themeData = THEMES[theme]
+  const activeDifficulty = mode === 'daily' ? dailyChallenge.difficulty : difficulty
+  const activeTheme = mode === 'daily' ? dailyChallenge.theme : theme
+  const score = useMemo(() => getBestScores()[`${activeDifficulty}-${activeTheme}`], [activeDifficulty, activeTheme])
+  const config = DIFFICULTIES[activeDifficulty]
+  const themeData = THEMES[activeTheme]
+  const bestMoves = mode === 'daily' ? dailyProgress.results[dailyChallenge.key]?.moves : score?.moves
   const previewSymbols = themeData.cards.slice(0, 6)
   const renderPreviewSymbol = (symbol) => themeData.imageDeck ? (
     <span className="preview-technology" style={{ '--preview-accent': symbol.color }}>
-      <img src={symbol.image} alt="" draggable="false" />
+      <span className="preview-logo" style={{ '--logo-image': `url("${symbol.image}")`, '--logo-color': symbol.color }} />
       <small>{symbol.name}</small>
     </span>
-  ) : theme === 'numbers' ? <strong>{symbol}</strong> : symbol
+  ) : activeTheme === 'numbers' ? <strong>{symbol}</strong> : symbol
 
   return (
     <main className="menu-shell">
@@ -38,14 +42,14 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
           <h1 id="game-title">Find the pairs.<br /><em>Train your focus.</em></h1>
           <p>Flip, remember, and match every card. Choose your challenge, build a streak, and set a new personal best.</p>
 
-          <div className={`preview-stage preview-stage-${theme}`} aria-hidden="true">
+          <div className={`preview-stage preview-stage-${activeTheme} ${mode === 'daily' ? 'preview-stage-daily' : ''}`} aria-hidden="true">
             <div className="preview-meta">
-              <span>{themeData.name} deck</span>
-              <span>{config.grid} × {config.grid}</span>
+              <span>{mode === 'daily' ? `Daily · ${themeData.name}` : `${themeData.name} deck`}</span>
+              <span>{mode === 'daily' ? dailyChallenge.key : `${config.grid} × ${config.grid}`}</span>
             </div>
             <div className="preview-cards">
               {previewSymbols.map((symbol, index) => (
-                <div key={`${theme}-${typeof symbol === 'object' ? symbol.name : symbol}`} className={`preview-card preview-card-${index + 1}`}>
+                <div key={`${activeTheme}-${typeof symbol === 'object' ? symbol.name : symbol}`} className={`preview-card preview-card-${index + 1}`}>
                   {renderPreviewSymbol(symbol)}
                 </div>
               ))}
@@ -54,7 +58,7 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
             <div className="preview-caption">
               <span><b>{config.pairs}</b> pairs</span>
               <span><b>{mode === 'timed' ? '60' : '∞'}</b> seconds</span>
-              <span><b>{score?.moves ?? '—'}</b> best moves</span>
+              <span><b>{bestMoves ?? '—'}</b> {mode === 'daily' ? 'today’s best' : 'best moves'}</span>
             </div>
           </div>
         </section>
@@ -96,10 +100,13 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
             <legend>Game mode</legend>
             <div className="mode-list">
               {Object.entries(MODES).map(([key, value]) => (
-                <button key={key} type="button" aria-pressed={mode === key} className={mode === key ? 'selected' : ''} onClick={() => setMode(key)}>
+                <button key={key} type="button" aria-pressed={mode === key} className={`${mode === key ? 'selected' : ''} ${key === 'daily' ? 'daily-option' : ''}`} onClick={() => setMode(key)}>
                   <span className="radio-dot" />
-                  <span className="mode-copy"><strong>{value.label}</strong><small>{value.description}</small></span>
-                  <span className="mode-meta">{value.meta}</span>
+                  <span className="mode-copy">
+                    <strong>{value.label}{key === 'daily' && dailyProgress.lastCompleted === dailyChallenge.key ? <b className="daily-complete">Done</b> : null}</strong>
+                    <small>{key === 'daily' ? `${THEMES[dailyChallenge.theme].name} · Medium · same board worldwide` : value.description}</small>
+                  </span>
+                  <span className="mode-meta">{key === 'daily' && dailyProgress.streak ? `${dailyProgress.streak} day streak` : value.meta}</span>
                 </button>
               ))}
             </div>
@@ -112,7 +119,9 @@ export default function Menu({ difficulty, theme, onDifficultyChange, onThemeCha
 
           <div className="personal-best" aria-live="polite">
             <Icon name="trophy" size={17} />
-            {score ? (
+            {mode === 'daily' ? (
+              <span>{dailyProgress.lastCompleted === dailyChallenge.key ? <><strong>Completed today</strong> · {dailyProgress.streak} day streak</> : <>Keep your <strong>{dailyProgress.streak || 0} day streak</strong> alive</>}</span>
+            ) : score ? (
               <span>Personal best: <strong>{score.moves} moves</strong> in {formatTime(score.time)}</span>
             ) : (
               <span>No score for this board yet — set the first.</span>

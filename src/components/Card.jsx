@@ -34,7 +34,12 @@ export default function Card({ card, isFlipped, isMatched, isShaking, isMatchAni
         <span className={`card-face card-back ${isImageTheme ? 'card-back-image' : ''}`}>
           {isImageTheme ? (
             <span className="technology-mark">
-              <img className="technology-logo" src={card.symbol.image} alt={cardLabel} draggable="false" />
+              <span
+                className="technology-logo"
+                role="img"
+                aria-label={cardLabel}
+                style={{ '--logo-color': card.symbol.color, '--logo-image': `url("${card.symbol.image}")` }}
+              />
               <span>{cardLabel}</span>
             </span>
           ) : (
