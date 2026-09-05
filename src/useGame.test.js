@@ -92,3 +92,48 @@ describe('useGame timed-mode completion', () => {
     expect(result.current.time).toBe(60)
   })
 })
+
+describe('useGame timer lifecycle', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  test('restarting during peek cancels the old countdown startup', () => {
+    const { result } = renderHook(() => useGame())
+    act(() => result.current.startGame('easy', 'emoji', 'timed'))
+    act(() => vi.advanceTimersByTime(2_100))
+    act(() => result.current.startGame('easy', 'emoji', 'timed'))
+    act(() => vi.advanceTimersByTime(800))
+    expect(result.current.peeking).toBe(true)
+    expect(result.current.locked).toBe(true)
+    act(() => vi.advanceTimersByTime(2_000))
+    expect(result.current.time).toBe(60)
+    act(() => vi.advanceTimersByTime(1_000))
+    expect(result.current.time).toBe(59)
+  })
+
+  test('a pending match cannot change a restarted game', () => {
+    const { result } = renderHook(() => useGame())
+    act(() => {
+      result.current.setSoundOn(false)
+      result.current.startGame('easy', 'emoji', 'classic')
+    })
+    act(() => vi.advanceTimersByTime(2_800))
+    const pair = result.current.cards.filter(c => c.pairId === result.current.cards[0].pairId)
+    act(() => result.current.flipCard(pair[0].id))
+    act(() => result.current.flipCard(pair[1].id))
+    act(() => result.current.startGame('easy', 'emoji', 'classic'))
+    act(() => vi.advanceTimersByTime(800))
+    expect(result.current.matchedPairIds.size).toBe(0)
+    expect(result.current.locked).toBe(true)
+  })
+
+  test('unmount cancels delayed startup and animation callbacks', () => {
+    const { result, unmount } = renderHook(() => useGame())
+    act(() => result.current.startGame('easy', 'emoji', 'classic'))
+    act(() => vi.advanceTimersByTime(2_100))
+    unmount()
+    expect(vi.getTimerCount()).toBe(0)
+    act(() => vi.advanceTimersByTime(5_000))
+    expect(vi.getTimerCount()).toBe(0)
+  })
+})

@@ -32,11 +32,28 @@ export function useGame() {
   const [peekProgress, setPeekProgress] = useState(0) // 0 to 1 for staggered flip
 
   const timerRef = useRef(null)
-  const peekTimerRef = useRef(null)
+  const pendingTimeouts = useRef(new Set())
   const totalPairs = useRef(0)
   const modeRef = useRef('classic')
 
+  const schedule = useCallback((callback, delay) => {
+    const id = setTimeout(() => {
+      pendingTimeouts.current.delete(id)
+      callback()
+    }, delay)
+    pendingTimeouts.current.add(id)
+    return id
+  }, [])
+
+  const clearTimers = useCallback(() => {
+    clearInterval(timerRef.current)
+    timerRef.current = null
+    pendingTimeouts.current.forEach(clearTimeout)
+    pendingTimeouts.current.clear()
+  }, [])
+
   const startGame = useCallback((diff, th, md) => {
+    clearTimers()
     const m = md || mode
     const challenge = m === 'daily' ? getDailyChallenge() : null
     const d = challenge?.difficulty || diff || difficulty
@@ -73,20 +90,18 @@ export function useGame() {
     // Card peek animation: show all face-up for 2s then stagger flip
     setPeeking(true)
     setPeekProgress(0)
-    if (peekTimerRef.current) clearTimeout(peekTimerRef.current)
 
-    peekTimerRef.current = setTimeout(() => {
+    schedule(() => {
       setPeekProgress(1) // trigger staggered flip-back
-      setTimeout(() => {
+      schedule(() => {
         setPeeking(false)
         setPeekProgress(0)
         setLocked(false)
       }, 800) // wait for stagger animation to finish
     }, 2000)
 
-    if (timerRef.current) clearInterval(timerRef.current)
     // Start timer after peek finishes (2.8s)
-    setTimeout(() => {
+    schedule(() => {
       if (m === 'timed') {
         timerRef.current = setInterval(() => {
           setTime(t => {
@@ -103,13 +118,13 @@ export function useGame() {
         }, 1000)
       }
     }, 2800)
-  }, [difficulty, theme, mode])
+  }, [difficulty, theme, mode, clearTimers, schedule])
 
   const endGame = useCallback((currentMoves, currentTime, reason = 'win', currentScore = score) => {
     setGameOver(true)
     setGameOverReason(reason)
     setIsPlaying(false)
-    if (timerRef.current) clearInterval(timerRef.current)
+    clearTimers()
 
     if (reason === 'win') {
       const stars = getStarRating(currentMoves, totalPairs.current)
@@ -130,7 +145,7 @@ export function useGame() {
       }
     }
     if (soundOn) playVictory()
-  }, [difficulty, theme, soundOn, score, dailyChallenge.key])
+  }, [difficulty, theme, soundOn, score, dailyChallenge.key, clearTimers])
 
   const flipCard = useCallback((cardId) => {
     if (locked || gameOver || showHint || peeking) return
@@ -169,7 +184,7 @@ export function useGame() {
         // Pulse animation
         setMatchAnimIds(new Set([first.id, second.id]))
 
-        setTimeout(() => {
+        schedule(() => {
           const newMatched = new Set(matchedPairIds)
           newMatched.add(first.pairId)
           setMatchedPairIds(newMatched)
@@ -191,14 +206,14 @@ export function useGame() {
 
         setShakeIds(new Set([first.id, second.id]))
 
-        setTimeout(() => {
+        schedule(() => {
           setFlippedIds([])
           setShakeIds(new Set())
           setLocked(false)
         }, 800)
       }
     }
-  }, [cards, flippedIds, locked, gameOver, showHint, peeking, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame, hintUsed, difficulty, score])
+  }, [cards, flippedIds, locked, gameOver, showHint, peeking, moves, combo, maxCombo, matchedPairIds, soundOn, time, endGame, hintUsed, difficulty, score, schedule])
 
   const useHintFn = useCallback(() => {
     if (hintUsed || !isPlaying || gameOver) return
@@ -207,11 +222,11 @@ export function useGame() {
     setLocked(true)
     if (soundOn) playHint()
 
-    setTimeout(() => {
+    schedule(() => {
       setShowHint(false)
       setLocked(false)
     }, 1000)
-  }, [hintUsed, isPlaying, gameOver, soundOn])
+  }, [hintUsed, isPlaying, gameOver, soundOn, schedule])
 
   // Timed mode: end game when timer hits 0. Defer the state transition so
   // restarting/unmounting can cancel it before it commits a stale timeout.
@@ -222,13 +237,8 @@ export function useGame() {
     return () => clearTimeout(timeoutId)
   }, [time, isPlaying, peeking, moves, endGame])
 
-  // Cleanup timers
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-      if (peekTimerRef.current) clearTimeout(peekTimerRef.current)
-    }
-  }, [])
+  // Cancel every callback on unmount, including delayed interval starts.
+  useEffect(() => clearTimers, [clearTimers])
 
   const stars = getStarRating(moves, DIFFICULTIES[difficulty].pairs)
 
